@@ -1,10 +1,8 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views import View
-from tolerancestackup.serializers import UserSerializer, GroupSerializer
-from django.contrib.auth.models import User, Group
-from rest_framework import viewsets, permissions
 import json
+from tolerancestackup.stackup import Stackup
 
 
 def view(request):
@@ -18,6 +16,8 @@ class TolStack(View):
 
 def js_response(request):
     data = json.loads(request.body)
-    print(f"ITEMS: {data}")
-    
-    return HttpResponse(f"Hello Javascript. {data}")
+    # Convert to list to make jsonable
+    return_data = Stackup(data).calc_stack().tolist()
+
+    print("Data Sent")
+    return JsonResponse({"values": return_data}, status=200)

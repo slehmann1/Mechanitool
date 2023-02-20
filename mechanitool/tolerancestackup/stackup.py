@@ -42,7 +42,7 @@ class Stackup:
     def calc_stack(self):
         """
         Computes the overall distribution, summing each step in the stackup
-        :return: A numpy array of length values
+        :return: A sorted numpy array of length values
         """
         num_of_steps = len(self.stackup_steps)
         self._calculate_stack_steps()
@@ -50,5 +50,7 @@ class Stackup:
         self.values = np.zeros(self.num_samples)
         for i in range(num_of_steps):
             self.values += self.stackup_steps[i].calculate()
+        
+        self.values.sort()
 
         return self.values

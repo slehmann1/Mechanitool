@@ -23,7 +23,8 @@ $(document).ready(function () {
       contentType: "application/json; charset=utf-8",
       processData: false,
       success: function (data) {
-        console.log("Recieved: " + data);
+        console.log("Recieved: ")
+        console.log(data);
       },
     });
   });
