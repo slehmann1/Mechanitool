@@ -2,8 +2,6 @@ import numpy as np
 from scipy.stats import truncnorm
 from abc import ABC, abstractmethod
 
-# The maximum number of iterations to be run for cutoff distributions
-_MAX_ITERATIONS = 100
 # The default number of samples if no other value is specified
 DEFAULT_SAMPLES = 1000
 

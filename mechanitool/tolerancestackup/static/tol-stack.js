@@ -164,10 +164,10 @@ function StackRows() {
       number: i + 1,
       name: row.find("#stack-name").val(),
       distribution: row.find("#dist").val(),
-      mean: row.find("#mean").val(),
-      std: row.find("#std").val(),
-      lcl: row.find("#lower-cutoff").val(),
-      ucl: row.find("#upper-cutoff").val(),
+      mean: parseFloat(row.find("#mean").val()),
+      std: parseFloat(row.find("#std").val()),
+      lsl: parseFloat(row.find("#lower-cutoff").val()),
+      usl: parseFloat(row.find("#upper-cutoff").val()),
     };
   }
   return stackRows;
