@@ -8,6 +8,25 @@ $(document).ready(function () {
     currrentRowNum++;
     addRow(currrentRowNum);
   });
+
+  $("#calculate").click(function () {
+    stackRows = new StackRows();
+    console.log("Wrote: ");
+    console.log(stackRows);
+    $.ajax({
+      url: "http://127.0.0.1:8000/tol/api",
+      headers: {
+        "X-CSRFToken": $.cookie("csrftoken"),
+      },
+      type: "POST",
+      data: JSON.stringify(stackRows),
+      contentType: "application/json; charset=utf-8",
+      processData: false,
+      success: function (data) {
+        console.log("Recieved: " + data);
+      },
+    });
+  });
 });
 
 /**
@@ -130,4 +149,26 @@ function updateID(jqObj, rowNum) {
   newID.pop();
   newID.push(rowNum);
   jqObj.attr("id", newID.join("-"));
+}
+
+/**
+ * Creates a stackrows object given the data within the UI
+ * @return {StackRow} Representation of UI data
+ */
+function StackRows() {
+  const stackRows = {};
+  for (let i = 0; i <= currrentRowNum; i++) {
+    const row = $("#row-" + i);
+    console.log("ROW" + row);
+    stackRows[i] = {
+      number: i + 1,
+      name: row.find("#stack-name").val(),
+      distribution: row.find("#dist").val(),
+      mean: row.find("#mean").val(),
+      std: row.find("#std").val(),
+      lcl: row.find("#lower-cutoff").val(),
+      ucl: row.find("#upper-cutoff").val(),
+    };
+  }
+  return stackRows;
 }
