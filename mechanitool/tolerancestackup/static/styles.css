@@ -26,11 +26,16 @@
   padding-right: 0.5rem;
 }
 
-.calculate {
-  width: 80%;
-  max-width: 600px;
-  margin: auto;
+.button-row{
   margin-bottom: 70px;
+}
+
+.btn {
+  margin: auto;
+  width: 100%;
+}
+.back{
+  visibility: hidden;
 }
 
 .background {
@@ -128,9 +133,7 @@ a:active {
   margin: auto;
 }
 
-.add-step {
-  margin-top: 10px;
-}
+
 .results-pane {
   width: 80%;
   height: 75vh;

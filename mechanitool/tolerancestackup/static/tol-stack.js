@@ -1,34 +1,58 @@
+/**
+ * Class to track the state of the application
+ */
+function State() {
+  State.pages = {
+    Setup: 0,
+    Results: 1,
+    Report: 2,
+  };
+
+  this.currentRowNum = 0;
+  this.page = 0;
+}
+
 const HIST_BINS = 15;
-let currrentRowNum = 0;
+const pageState = new State();
 
 $(document).ready(function () {
   // Update first row to update events:
   updateRow($("#row-0"), 0);
 
+  //Setup Button Events
   $("#add-step").click(function () {
-    currrentRowNum++;
-    addRow(currrentRowNum);
+    pageState.currentRowNum++;
+    addRow(pageState.currentRowNum);
   });
 
   $("#calculate").click(function () {
-    stackRows = new StackRows();
-    console.log("Wrote: ");
-    console.log(stackRows);
-    $.ajax({
-      url: "http://127.0.0.1:8000/tol/api",
-      headers: {
-        "X-CSRFToken": $.cookie("csrftoken"),
-      },
-      type: "POST",
-      data: JSON.stringify(stackRows),
-      contentType: "application/json; charset=utf-8",
-      processData: false,
-      success: function (data) {
-        console.log("Recieved: ");
-        console.log(data);
-        displayResults(data);
-      },
-    });
+    if (pageState.page == State.pages.Setup) {
+      stackRows = new StackRows();
+      console.log("Wrote: ");
+      console.log(stackRows);
+      $.ajax({
+        url: "http://127.0.0.1:8000/tol/api",
+        headers: {
+          "X-CSRFToken": $.cookie("csrftoken"),
+        },
+        type: "POST",
+        data: JSON.stringify(stackRows),
+        contentType: "application/json; charset=utf-8",
+        processData: false,
+        success: function (data) {
+          console.log("Recieved: ");
+          console.log(data);
+          displayResults(data);
+        },
+      });
+    }
+  });
+
+  $("#back").click(function () {
+    console.log("Button Pressed");
+    if (pageState.page == State.pages.Results) {
+      displaySetup();
+    }
   });
 });
 
@@ -39,7 +63,7 @@ $(document).ready(function () {
 function deleteRow(row) {
   row.remove();
   let hasSkipped = false; // Tracks if deleted row has been passed
-  for (let i = 0; i <= currrentRowNum; i++) {
+  for (let i = 0; i <= pageState.currentRowNum; i++) {
     row = $("#row-" + i);
     if (row.length != 0) {
       // Deleting the row throws off the count; subtract 1
@@ -52,7 +76,7 @@ function deleteRow(row) {
       hasSkipped = true;
     }
   }
-  currrentRowNum--;
+  pageState.currentRowNum--;
 }
 
 /**
@@ -162,7 +186,7 @@ function updateID(jqObj, rowNum) {
  */
 function StackRows() {
   const stackRows = {};
-  for (let i = 0; i <= currrentRowNum; i++) {
+  for (let i = 0; i <= pageState.currentRowNum; i++) {
     const row = $("#row-" + i);
     console.log("ROW" + row);
     stackRows[i] = {
@@ -179,13 +203,27 @@ function StackRows() {
 }
 
 /**
+ * Displays the setup pane for a tolerance stack
+ */
+function displaySetup() {
+  pageState.page = State.pages.Setup;
+  $("#setup-pane").css("display", "block");
+  $("#add-step").css("visibility", "visible");
+  $("#back").css("visibility", "hidden");
+  $("#results-container").css("display", "none");
+}
+
+/**
  * Displays the results pane for a tolerance stack
  * @param {Array} data The data to populate the histogram with
  */
 function displayResults(data) {
+  pageState.page = State.pages.Results;
   $("#setup-pane").css("display", "none");
+  $("#add-step").css("visibility", "hidden");
+  $("#back").css("visibility", "visible");
   $("#results-container").css("display", "block");
-  console.log("RUN");
+  console.log("Run Histogram");
   createHistogram(data["values"]);
 }
 

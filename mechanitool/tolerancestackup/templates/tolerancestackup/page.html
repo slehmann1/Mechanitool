@@ -136,20 +136,14 @@
           </div>
         </div>
       </div>
-      <div class="text-center add-step">
-        <button class="btn btn-primary" id="add-step">
-          <i class="fa-solid fa-circle-plus"></i> Add Step
-        </button>
-      </div>
     </div>
 
-    <div id="results-container" style="display: none" class="align-self-center results-pane">
-      <svg
-        style="
-          width: 100%;
-          height: 100%;
-        "
-      >
+    <div
+      id="results-container"
+      style="display: none"
+      class="align-self-center results-pane"
+    >
+      <svg style="width: 100%; height: 100%">
         <style class="style">
           .title {
             fill: #112d4e;
@@ -185,11 +179,24 @@
         </style>
       </svg>
     </div>
-
-    <div class="text-center">
-      <button class="btn btn-primary fixed-bottom calculate" id="calculate">
-        <i class="fa-solid fa-calculator"></i> Calculate
-      </button>
+    <div class="row stack-step fixed-bottom button-row" id="button-row">
+      <div class="offset-1 col-md-2">
+        <button class="btn btn-primary back" id="back">
+          <i class="fa-solid fa-arrow-left"></i>&ensp; Back
+        </button>
+      </div>
+      <div class="offset-2 col-md-2">
+        <button class="btn btn-primary" id="add-step">
+          <i class="fa-solid fa-circle-plus"></i>&ensp; Add Step
+        </button>
+      </div>
+      <div class="offset-2 col-md-2">
+        <button class="btn btn-primary" id="calculate">
+          <i class="fa-solid fa-calculator"></i>&ensp; Calculate &ensp;<i
+            class="fa-solid fa-arrow-right"
+          ></i>
+        </button>
+      </div>
     </div>
   </body>
   <footer>
