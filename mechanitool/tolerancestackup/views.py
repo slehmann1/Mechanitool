@@ -21,3 +21,7 @@ def js_response(request):
 
     print("Data Sent")
     return JsonResponse({"values": return_data}, status=200)
+
+class Graph(View):
+    def get(self, request):
+        return render(request, "tolerancestackup/graph.html")
