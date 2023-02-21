@@ -93,6 +93,8 @@ function updateRow(row, rowNum, resetRow = false) {
     row.find("#dist").val("Normal");
     row.find("#mean").val("");
     row.find("#std").val("");
+    row.find("#lower-cutoff").val("");
+    row.find("#upper-cutoff").val("");
     cutoffs.prop("checked", false);
     row.find("#cutoff-well").css("visibility", "hidden");
     row.find("#delete").css("visibility", "visible");
