@@ -24,115 +24,166 @@
       crossorigin="anonymous"
     ></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"
+    ></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
   </head>
 
   <body class="background">
     <h1 class="text-center title">Mechanitool Tolerance Stackup Calculator</h1>
 
-    <div class="stack-container" id="stack-container">
-      <div class="row stack-step" id="row-0">
-        <div class="col-md-1 align-self-center">
-          <h4 class="col-md-1 align-self-center stack-num" id="stack-num">1</h4>
-        </div>
+    <div id="setup-pane">
+      <div class="stack-container" id="stack-container">
+        <div class="row stack-step" id="row-0">
+          <div class="col-md-1 align-self-center">
+            <h4 class="col-md-1 align-self-center stack-num" id="stack-num">
+              1
+            </h4>
+          </div>
 
-        <div class="col-md-2 align-self-center">
-          <input
-            class="form-control"
-            id="stack-name"
-            type="text"
-            placeholder="Name"
-          />
-        </div>
+          <div class="col-md-2 align-self-center">
+            <input
+              class="form-control"
+              id="stack-name"
+              type="text"
+              placeholder="Name"
+            />
+          </div>
 
-        <div class="col-md-2 align-self-center">
-          <div class="input-group">
-            <div class="input-group-prepend" id="dist-prepend">
-              <label class="input-group-text" id="dist-label" for="dist"
-                >Distribution</label
+          <div class="col-md-2 align-self-center">
+            <div class="input-group">
+              <div class="input-group-prepend" id="dist-prepend">
+                <label class="input-group-text" id="dist-label" for="dist"
+                  >Distribution</label
+                >
+              </div>
+              <select class="form-select distributions" id="dist">
+                <option>Normal</option>
+                <option>Uniform</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-md-1 align-self-center">
+            <div class="input-group">
+              <div class="input-group-prepend mean" id="mean-prepend">
+                <span class="input-group-text mean" id="mean-label">Mean</span>
+              </div>
+              <input class="form-control" type="number" id="mean" />
+            </div>
+          </div>
+
+          <div class="col-md-2 align-self-center">
+            <div class="input-group">
+              <div class="input-group-prepend" id="std-prepend">
+                <span class="input-group-text" id="std-label"
+                  >Standard Deviation</span
+                >
+              </div>
+              <input class="form-control" type="number" id="std" />
+            </div>
+          </div>
+
+          <div class="col-md-1 align-self-center">
+            <div class="form-check form-switch align-self-center">
+              <label
+                class="form-check-label align-self-center cutoffs-label"
+                id="cutoffs-label-0"
+                for="cutoffs-0"
+                ><input
+                  class="form-check-input align-self-center cutoffs-check"
+                  type="checkbox"
+                  id="cutoffs-0"
+                />
+                Cutoffs</label
               >
             </div>
-            <select class="form-select distributions" id="dist">
-              <option>Normal</option>
-              <option>Uniform</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="col-md-1 align-self-center">
-          <div class="input-group">
-            <div class="input-group-prepend mean" id="mean-prepend">
-              <span class="input-group-text mean" id="mean-label">Mean</span>
-            </div>
-            <input class="form-control" type="number" id="mean" />
-          </div>
-        </div>
-
-        <div class="col-md-2 align-self-center">
-          <div class="input-group">
-            <div class="input-group-prepend" id="std-prepend">
-              <span class="input-group-text" id="std-label"
-                >Standard Deviation</span
-              >
-            </div>
-            <input class="form-control" type="number" id="std" />
-          </div>
-        </div>
-
-        <div class="col-md-1 align-self-center">
-          <div class="form-check form-switch align-self-center">
-            <label
-              class="form-check-label align-self-center cutoffs-label"
-              id="cutoffs-label-0"
-              for="cutoffs-0"
-              ><input
-                class="form-check-input align-self-center cutoffs-check"
-                type="checkbox"
-                id="cutoffs-0"
-              />
-              Cutoffs</label
-            >
-          </div>
-        </div>
-
-        <div
-          class="well col-md-2 cutoff-container justify-content-center align-self-center"
-          id="cutoff-well"
-          style="visibility: hidden"
-        >
-          <div class="input-group cutoff align-self-center">
-            <div class="input-group-prepend" id="lower-cutoff-prepend">
-              <span class="input-group-text" id="lower-cutoff-label"
-                >Lower Cutoff</span
-              >
-            </div>
-            <input class="form-control" type="number" id="lower-cutoff" />
           </div>
 
-          <div class="input-group cutoff align-self-center">
-            <div class="input-group-prepend" id="upper-cutoff-prepend">
-              <span class="input-group-text" id="upper-cutoff-label"
-                >Upper Cutoff</span
-              >
-            </div>
-            <input class="form-control" type="number" id="upper-cutoff" />
-          </div>
-        </div>
-        <div class="col-md-1 align-self-center">
-          <button
-            class="col-md-1 btn btn-delete align-self-center"
-            id="delete"
+          <div
+            class="well col-md-2 cutoff-container justify-content-center align-self-center"
+            id="cutoff-well"
             style="visibility: hidden"
           >
-            <i class="fa-solid fa-circle-minus"></i>
-          </button>
+            <div class="input-group cutoff align-self-center">
+              <div class="input-group-prepend" id="lower-cutoff-prepend">
+                <span class="input-group-text" id="lower-cutoff-label"
+                  >Lower Cutoff</span
+                >
+              </div>
+              <input class="form-control" type="number" id="lower-cutoff" />
+            </div>
+
+            <div class="input-group cutoff align-self-center">
+              <div class="input-group-prepend" id="upper-cutoff-prepend">
+                <span class="input-group-text" id="upper-cutoff-label"
+                  >Upper Cutoff</span
+                >
+              </div>
+              <input class="form-control" type="number" id="upper-cutoff" />
+            </div>
+          </div>
+          <div class="col-md-1 align-self-center">
+            <button
+              class="col-md-1 btn btn-delete align-self-center"
+              id="delete"
+              style="visibility: hidden"
+            >
+              <i class="fa-solid fa-circle-minus"></i>
+            </button>
+          </div>
         </div>
       </div>
+      <div class="text-center add-step">
+        <button class="btn btn-primary" id="add-step">
+          <i class="fa-solid fa-circle-plus"></i> Add Step
+        </button>
+      </div>
     </div>
-    <div class="text-center add-step">
-      <button class="btn btn-primary" id="add-step">
-        <i class="fa-solid fa-circle-plus"></i> Add Step
-      </button>
+
+    <div id="results-container" style="display: none" class="align-self-center results-pane">
+      <svg
+        style="
+          width: 100%;
+          height: 100%;
+        "
+      >
+        <style class="style">
+          .title {
+            fill: #112d4e;
+            font-family: "Helvetica Neue", "Helvetica", "sans-serif";
+            font-size: 24px;
+          }
+          .axis-title {
+            fill: #112d4e;
+            font-family: "Helvetica Neue", "Helvetica", "sans-serif";
+            font-size: 16px;
+          }
+          .axis text {
+            fill: #112d4e;
+            font-family: "Helvetica Neue", "Helvetica", "sans-serif";
+            font-size: 12px;
+          }
+          .axis line {
+            stroke: #112d4e;
+          }
+
+          .axis path {
+            stroke: #112d4e;
+          }
+          .line {
+            stroke-width: 5px;
+            stroke: #112d4e;
+            fill: none;
+          }
+          .dot {
+            fill: none;
+            stroke: none;
+          }
+        </style>
+      </svg>
     </div>
 
     <div class="text-center">

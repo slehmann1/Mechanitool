@@ -1,138 +1,138 @@
 .title {
-    margin-bottom: 3rem;
-    margin-top: 1rem;
-    color: #112D4E !important;
+  margin-bottom: 3rem;
+  margin-top: 1rem;
+  color: #112d4e !important;
 }
 
 .cutoff {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .cutoff-container {
-    opacity:0;
+  opacity: 0;
 }
 
 .btn-primary {
-    background: #112D4E !important;
-    border-color: #010911 !important;
-    color: #F9F7F7 !important;
-    border-radius: 3px !important;
+  background: #112d4e !important;
+  border-color: #010911 !important;
+  color: #f9f7f7 !important;
+  border-radius: 3px !important;
 }
 
 .stack-num {
-    text-align: right;
-    margin: auto;
-    padding-right: 0.5rem;
+  text-align: right;
+  margin: auto;
+  padding-right: 0.5rem;
 }
 
 .calculate {
-    width: 80%;
-    max-width: 600px;
-    margin: auto;
-    margin-bottom: 70px;
-
-}
-
-.stack-container {
-    width: 80%;
-    margin: auto;
-    height: 80%;
+  width: 80%;
+  max-width: 600px;
+  margin: auto;
+  margin-bottom: 70px;
 }
 
 .background {
-    background-color: #F9F7F7;
+  background-color: #f9f7f7;
 }
 
 a:link {
-    color: #3F72AF !important;
+  color: #3f72af !important;
 }
 
 a:hover {
-    color: #112D4E !important;
+  color: #112d4e !important;
 }
 
 a:visited {
-    color: #3F72AF !important;
+  color: #3f72af !important;
 }
 
 a:active {
-    color: #112D4E !important;
+  color: #112d4e !important;
 }
 
 .text-muted {
-    font-style: italic;
-    font-size: small;
-    vertical-align: bottom;
-    margin: 25px;
+  font-style: italic;
+  font-size: small;
+  vertical-align: bottom;
+  margin: 25px;
 }
 
 .form-control {
-    min-width: 3rem !important;
-    border-color: #DBE2EF !important;
+  min-width: 3rem !important;
+  border-color: #dbe2ef !important;
 }
 
 .form-control:focus {
-    border-color: #3F72AF !important;
-    box-shadow: 0 0 0 0.2rem rgba(63, 114, 175, 0.2) !important;
+  border-color: #3f72af !important;
+  box-shadow: 0 0 0 0.2rem rgba(63, 114, 175, 0.2) !important;
 }
 
 .form-select:focus {
-    border-color: #3F72AF !important;
-    box-shadow: 0 0 0 0.2rem rgba(63, 114, 175, 0.2) !important;
+  border-color: #3f72af !important;
+  box-shadow: 0 0 0 0.2rem rgba(63, 114, 175, 0.2) !important;
 }
 
 .input-group-text {
-    border-top-right-radius: 0px !important;
-    border-bottom-right-radius: 0px !important;
-    color: #112D4E !important;
-    text-align: right !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+  color: #112d4e !important;
+  text-align: right !important;
 }
 
-.btn-delete{
-    background: #FF5D5D !important;
-    border-color: #FF8C8C !important;
-    color: #F9F7F7 !important;
-    border-radius: 5px !important;
-    width:3rem !important;
-    height:3rem !important;
-    margin-left:3rem;
+.btn-delete {
+  background: #ff5d5d !important;
+  border-color: #ff8c8c !important;
+  color: #f9f7f7 !important;
+  border-radius: 5px !important;
+  width: 3rem !important;
+  height: 3rem !important;
+  margin-left: 3rem;
 }
 
-.mean{
-    width: 4rem !important;
+.mean {
+  width: 4rem !important;
 }
 
 .form-check-input {
-    border-color: #DBE2EF !important;
+  border-color: #dbe2ef !important;
 }
 
 .form-check-input:focus {
-    border-color: #3F72AF !important;
-    box-shadow: 0 0 0 0.2rem rgba(63, 114, 175, 0.2) !important;
+  border-color: #3f72af !important;
+  box-shadow: 0 0 0 0.2rem rgba(63, 114, 175, 0.2) !important;
 }
 
 .form-check-input:checked {
-    border-color: #3F72AF !important;
-    background-color: #112D4E !important;
+  border-color: #3f72af !important;
+  background-color: #112d4e !important;
 }
 
 .form-check-input:focus:not(:checked) {
-    border-color: #3F72AF !important;
-    background-color: #DBE2EF !important;
+  border-color: #3f72af !important;
+  background-color: #dbe2ef !important;
 }
 
 .form-check-input:not(:disabled):active {
-    background-color: #DBE2EF !important;
-    border-color: #DBE2EF !important;
+  background-color: #dbe2ef !important;
+  border-color: #dbe2ef !important;
 }
 
-.stack-container{
-    height:75vh;
-    overflow-y:auto;
-    overflow-x: hidden;
+.stack-container {
+  width: 80%;
+  height: 75vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: auto;
 }
 
-.add-step{
-    margin-top:10px;
+.add-step {
+  margin-top: 10px;
+}
+.results-pane {
+  width: 80%;
+  height: 75vh;
+  margin: auto;
 }
