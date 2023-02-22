@@ -260,12 +260,12 @@ function getHistogramBins(data, domain) {
  */
 function createHistogram(data) {
   const svg = d3.select("svg");
-  const parent = $("#results-container");
+  const parent = $(".results-graph");
 
   // Remove any prior graph, but keep the styling
   svg.selectAll("*:not(.style)").remove();
 
-  const margin = 120;
+  const margin = 140;
   const width = parent.width() - margin;
   const height = parent.height() - margin;
 
@@ -306,7 +306,7 @@ function createHistogram(data) {
     .attr(
       "transform",
       "translate(" +
-        (margin / 2 - 40) +
+        (margin / 2 - 50) +
         "," +
         (height + margin) / 2 +
         ")rotate(-90)"
@@ -490,6 +490,7 @@ function createLineRule(
   let rectWidth = width - startX + margin / 2;
   let textTransformX = 200;
   let textAlign = "end";
+  let textPrefix = "Upper";
 
   if (!isRightSide) {
     className = "rule-left";
@@ -497,6 +498,7 @@ function createLineRule(
     rectWidth = startX - margin / 2;
     textTransformX *= -1;
     textAlign = "start";
+    textPrefix = "Lower";
   }
 
   const lineRuleContainer = svg
@@ -542,7 +544,9 @@ function createLineRule(
       "translate(" + textTransformX + "," + (margin / 2 + 20) + ")"
     )
     .text(
-      "Upper Limit: X=" + (xScale.invert((margin / 2) * 100) / 100).toFixed(2)
+      textPrefix +
+        " Limit: X=" +
+        (xScale.invert((margin / 2) * 100) / 100).toFixed(2)
     )
     .attr("class", "rule-text");
 }

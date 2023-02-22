@@ -26,7 +26,7 @@
   padding-right: 0.5rem;
 }
 
-.button-row{
+.button-row {
   margin-bottom: 70px;
 }
 
@@ -34,7 +34,7 @@
   margin: auto;
   width: 100%;
 }
-.back{
+.back {
   visibility: hidden;
 }
 
@@ -133,9 +133,30 @@ a:active {
   margin: auto;
 }
 
-
-.results-pane {
-  width: 80%;
+.results-graph {
   height: 75vh;
-  margin: auto;
+}
+
+.table-div {
+  height: 75vh;
+  padding-top: 70px;
+}
+
+table {
+  margin-top: 15%;
+}
+
+td,
+thead {
+  text-align: center;
+  color: #112d4e;
+}
+
+th {
+  text-align: end !important;
+  color: #112d4e;
+}
+
+html {
+  overflow-x: hidden;
 }
