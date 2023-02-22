@@ -225,6 +225,7 @@ function displayResults(data) {
   $("#results-container").css("display", "block");
   console.log("Run Histogram");
   createHistogram(data["values"]);
+  updateStatisticalTables(data["values"]);
 }
 
 /**
@@ -436,9 +437,7 @@ function createGraphRules(svg, margin, height, width, xScale) {
       .text(
         textPrefix +
           " Limit: X=" +
-          (
-            Math.round(xScale.invert(d3.event.x - margin / 2) * 100) / 100
-          ).toFixed(2)
+          round2Decs(xScale.invert(d3.event.x - margin / 2))
       );
 
     // Update rects
@@ -549,4 +548,90 @@ function createLineRule(
         (xScale.invert((margin / 2) * 100) / 100).toFixed(2)
     )
     .attr("class", "rule-text");
+}
+
+/**
+ * Updates statistical tables on the page
+ * @param {Array} data Array of data
+ */
+function updateStatisticalTables(data) {
+  // Update stat results table
+  const statResults = new StatisticalResults(data);
+
+  $("#tab-mean").html(round2Decs(statResults.mean));
+  $("#tab-median").html(round2Decs(statResults.median));
+  $("#tab-std").html(round2Decs(statResults.std));
+  $("#tab-samples").html(statResults.numSamples);
+
+  const rangeResults = new RangeResults(data);
+  $("#tab-70-min").html(round2Decs(rangeResults.percentSample70[0]));
+  $("#tab-70-max").html(round2Decs(rangeResults.percentSample70[1]));
+  $("#tab-95-min").html(round2Decs(rangeResults.percentSample95[0]));
+  $("#tab-95-max").html(round2Decs(rangeResults.percentSample95[1]));
+  $("#tab-99-min").html(round2Decs(rangeResults.percentSample99[0]));
+  $("#tab-99-max").html(round2Decs(rangeResults.percentSample99[1]));
+  $("#tab-99_9-min").html(round2Decs(rangeResults.percentSample99_9[0]));
+  $("#tab-99_9-max").html(round2Decs(rangeResults.percentSample99_9[1]));
+  $("#tab-99_99-min").html(round2Decs(rangeResults.percentSample99_99[0]));
+  $("#tab-99_99-max").html(round2Decs(rangeResults.percentSample99_99[1]));
+}
+
+/**
+ * Rounds a floating point number to 2 decimal places
+ * @param {Number} num A floating point number to be rounded
+ * @return {string} Rounded number in a string representation
+ */
+function round2Decs(num) {
+  return (Math.round(num * 100) / 100).toFixed(2);
+}
+
+/**
+ * Computes basic statistical results for an array of numbers
+ * @param {Array} data Array of numbers to compute statistical results for
+ */
+function StatisticalResults(data) {
+  this.numSamples = data.length;
+  this.mean = data.reduce((a, b) => a + b, 0) / this.numSamples;
+  this.std = Math.sqrt(
+    data.map((x) => Math.pow(x - this.mean, 2)).reduce((a, b) => a + b) /
+      this.numSamples
+  );
+  const midpoint = Math.floor(data.length / 2);
+  // If odd take midpoint
+  // If even take avg of midpoints
+  this.median =
+    data.length % 2 === 1
+      ? data[midpoint]
+      : (data[midpoint - 1] + data[midpoint]) / 2;
+}
+
+/**
+ * Object that computes percentage ranges associated with numeric data
+ * @param {Array} data Array of numbers to compute range results for
+ */
+function RangeResults(data) {
+  this.percentSample70 = getPercentileRange(data, 70);
+  this.percentSample95 = getPercentileRange(data, 95);
+  this.percentSample99 = getPercentileRange(data, 99);
+  this.percentSample99_9 = getPercentileRange(data, 99.9);
+  this.percentSample99_99 = getPercentileRange(data, 99.99);
+}
+
+/**
+ * Computes the two sided limit required to enclose
+ * a certain percentage of a data array
+ * @param {Array} data Array of numbers to compute the percentile range for
+ * @param {Number} percent Percentage that should fall between the bounds
+ * @return {Array} [Lower Limit, Upper Limit]
+ */
+function getPercentileRange(data, percent) {
+  // Samples permitted on either side
+  const samples = Math.floor((data.length * percent) / 200);
+  console.log(samples);
+  const i = data.length / 2 - samples < 0 ? 0 : data.length / 2 - samples;
+  const j =
+    data.length / 2 + samples > data.length - 1
+      ? data.length - 1
+      : data.length / 2 + samples;
+  return [data[i], data[j]];
 }
