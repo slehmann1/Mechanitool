@@ -19,7 +19,7 @@ $(document).ready(function () {
   // Update first row to update events:
   updateRow($("#row-0"), 0);
 
-  //Setup Button Events
+  // Setup Button Events
   $("#add-step").click(function () {
     pageState.currentRowNum++;
     addRow(pageState.currentRowNum);
@@ -311,8 +311,6 @@ function createHistogram(data) {
         (height + margin) / 2 +
         ")rotate(-90)"
     )
-    .style("font-family", "Helvetica")
-    .style("font-size", 12)
     .text("Number Of Samples")
     .attr("class", "axis-title");
 
@@ -367,4 +365,184 @@ function createHistogram(data) {
     .attr("transform", "translate(" + margin / 2 + "," + margin / 2 + ")")
     .attr("d", line)
     .attr("class", "line");
+
+  createGraphRules(svg, margin, height, width, xScale);
+}
+
+/**
+ * Adds draggable rules to a graph
+ * @param {Element} svg The svg element to add the rules to
+ * @param {number} margin The margin around the graph within the SVG element
+ * @param {number} height The height of the SVG element
+ * @param {number} width The width of the SVG element
+ * @param {d3.scaleLinear} xScale Scale for the x axis
+ */
+function createGraphRules(svg, margin, height, width, xScale) {
+  const leftStart = (width - margin) / 6 + margin / 2;
+  const rightStart = ((width - margin) * 5) / 6 + margin / 2;
+
+  // Note order important to overly properly
+  svg
+    .append("rect")
+    .attr("y", margin / 2)
+    .attr("x", leftStart)
+    .attr("height", height)
+    .attr("width", rightStart - leftStart)
+    .attr("class", "rule-rect-inside ");
+
+  createLineRule(svg, false, leftStart, margin, width, height, xScale);
+  createLineRule(svg, true, rightStart, margin, width, height, xScale);
+
+  // Handles relocation of the line rules
+  const dragHandler = d3.drag().on("drag", function (d) {
+    if (d3.event.x > width + margin / 2) {
+      // Don't let drag off the right of the svg
+      d3.event.x = width + margin / 2;
+    }
+    if (d3.event.x < margin / 2) {
+      // Don't let drag off the left of the svg
+      d3.event.x = margin / 2;
+    }
+
+    const rightSide = d3
+      .select(this)
+      .select(".rule-rect-outside")
+      .attr("class")
+      .includes("right");
+
+    // https://stackoverflow.com/questions/38224875/how-can-d3-transform-be-used-in-d3-v4/38230545#38230545
+    let rightX = d3.select(".rule-right").node().transform.baseVal[0].matrix.e;
+    let leftX = d3.select(".rule-left").node().transform.baseVal[0].matrix.e;
+
+    let textPrefix = "Upper";
+
+    if (rightSide) {
+      // Ensure that the rules do not cross
+      if (d3.event.x < leftX) {
+        d3.event.x = leftX;
+      }
+    } else {
+      // Ensure that the rules do not cross
+      if (d3.event.x > rightX) {
+        d3.event.x = rightX;
+      }
+      textPrefix = "Lower";
+    }
+
+    d3.select(this).attr("transform", "translate(" + d3.event.x + ",0)");
+    // Update text
+    d3.select(this)
+      .select(".rule-text")
+      .text(
+        textPrefix +
+          " Limit: X=" +
+          (
+            Math.round(xScale.invert(d3.event.x - margin / 2) * 100) / 100
+          ).toFixed(2)
+      );
+
+    // Update rects
+    if (rightSide) {
+      // Update the rect as though it is the right margin
+      d3.select(this)
+        .select(".rule-rect-outside")
+        .attr("width", width - d3.event.x + margin / 2);
+      rightX = d3.event.x;
+    } else {
+      // Update the rect as though it is the left margin
+      d3.select(this)
+        .select(".rule-rect-outside")
+        .attr("width", d3.event.x - margin / 2);
+      d3.select(this)
+        .select(".rule-rect-outside")
+        .attr("x", -d3.event.x + margin / 2);
+      leftX = d3.event.x;
+    }
+    // Update the inside rect
+    d3.select(".rule-rect-inside")
+      .attr("x", leftX)
+      .attr("width", rightX - leftX);
+  });
+  dragHandler(svg.selectAll(".line-rule-container"));
+}
+
+/**
+ *  Adds a line rule to a graph
+ * @param {Element} svg SVG Element to add the line rules to
+ * @param {boolean} isRightSide Is the rule to be added on the right?
+ * @param {number} startX The start X value of the rule in the SVG's coordinates
+ * @param {number} margin Margin added around the graph within the svg
+ * @param {number} width Width of the svg
+ * @param {number} height Height of the svg
+ * @param {d3.scaleLinear} xScale Scale for the x axis
+ */
+function createLineRule(
+  svg,
+  isRightSide,
+  startX,
+  margin,
+  width,
+  height,
+  xScale
+) {
+  let className = "rule-right";
+  let rectX = 0;
+  let rectWidth = width - startX + margin / 2;
+  let textTransformX = 200;
+  let textAlign = "end";
+
+  if (!isRightSide) {
+    className = "rule-left";
+    rectX = -startX + margin / 2;
+    rectWidth = startX - margin / 2;
+    textTransformX *= -1;
+    textAlign = "start";
+  }
+
+  const lineRuleContainer = svg
+    .append("g")
+    .attr("transform", "translate(" + startX + ",0)")
+    .attr("class", "line-rule-container " + className);
+
+  lineRuleContainer
+    .append("rect")
+    .attr("y", margin / 2)
+    .attr("x", rectX)
+    .attr("height", height)
+    .attr("width", rectWidth)
+    .attr("class", "rule-rect-outside " + className);
+
+  lineRuleContainer
+    .append("line")
+    .attr("y1", margin / 2)
+    .attr("y2", height + margin / 2)
+    .attr("x1", 0)
+    .attr("x2", 0)
+    .attr("class", "rule-line");
+
+  lineRuleContainer
+    .append("circle")
+    .attr("r", 10)
+    .attr("cx", 0)
+    .attr("cy", height + margin / 2)
+    .attr("class", "rule-circle");
+
+  lineRuleContainer
+    .append("circle")
+    .attr("r", 10)
+    .attr("cx", 0)
+    .attr("cy", margin / 2)
+    .attr("class", "rule-circle");
+
+  lineRuleContainer
+    .append("text")
+    .attr("text-anchor", textAlign)
+    .attr(
+      "transform",
+      "translate(" + textTransformX + "," + (margin / 2 + 20) + ")"
+    )
+    .text(
+      "Upper Limit: X=" + (xScale.invert((margin / 2) * 100) / 100).toFixed(2)
+    )
+    .attr("class", "rule-text");
 }
