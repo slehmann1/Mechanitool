@@ -393,7 +393,7 @@ function createHistogram(data) {
     .attr("d", line)
     .attr("class", "line");
 
-  createGraphRules(svg, margin, height, width, xScale);
+  createGraphRules(svg, margin, height, width, xScale, data);
 }
 
 /**
@@ -403,8 +403,9 @@ function createHistogram(data) {
  * @param {number} height The height of the SVG element
  * @param {number} width The width of the SVG element
  * @param {d3.scaleLinear} xScale Scale for the x axis
+ * @param {Array} data Array of numbers plotted by the histogram
  */
-function createGraphRules(svg, margin, height, width, xScale) {
+function createGraphRules(svg, margin, height, width, xScale, data) {
   const leftStart = (width - margin) / 6 + margin / 2;
   const rightStart = ((width - margin) * 5) / 6 + margin / 2;
 
@@ -417,105 +418,179 @@ function createGraphRules(svg, margin, height, width, xScale) {
     .attr("width", rightStart - leftStart)
     .attr("class", "rule-rect-inside ");
 
-  createLineRule(svg, false, leftStart, margin, width, height, xScale);
-  createLineRule(svg, true, rightStart, margin, width, height, xScale);
+  createLineRule(
+    svg,
+    false,
+    leftStart,
+    rightStart,
+    margin,
+    width,
+    height,
+    xScale,
+    data
+  );
+  createLineRule(
+    svg,
+    true,
+    leftStart,
+    rightStart,
+    margin,
+    width,
+    height,
+    xScale,
+    data
+  );
 
   // Handles relocation of the line rules
-  const dragHandler = d3.drag().on("drag", function (d) {
-    if (d3.event.x > width + margin / 2) {
-      // Don't let drag off the right of the svg
-      d3.event.x = width + margin / 2;
-    }
-    if (d3.event.x < margin / 2) {
-      // Don't let drag off the left of the svg
-      d3.event.x = margin / 2;
-    }
-
-    const rightSide = d3
-      .select(this)
-      .select(".rule-rect-outside")
-      .attr("class")
-      .includes("right");
-
-    // https://stackoverflow.com/questions/38224875/how-can-d3-transform-be-used-in-d3-v4/38230545#38230545
-    let rightX = d3.select(".rule-right").node().transform.baseVal[0].matrix.e;
-    let leftX = d3.select(".rule-left").node().transform.baseVal[0].matrix.e;
-
-    let textPrefix = "Upper";
-
-    if (rightSide) {
-      // Ensure that the rules do not cross
-      if (d3.event.x < leftX) {
-        d3.event.x = leftX;
-      }
-    } else {
-      // Ensure that the rules do not cross
-      if (d3.event.x > rightX) {
-        d3.event.x = rightX;
-      }
-      textPrefix = "Lower";
-    }
-
-    d3.select(this).attr("transform", "translate(" + d3.event.x + ",0)");
-    // Update text
-    d3.select(this)
-      .select(".rule-text")
-      .text(
-        textPrefix +
-          " Limit: X=" +
-          roundNDecsFixed(xScale.invert(d3.event.x - margin / 2))
-      );
-
-    // Update rects
-    if (rightSide) {
-      // Update the rect as though it is the right margin
-      d3.select(this)
-        .select(".rule-rect-outside")
-        .attr("width", width - d3.event.x + margin / 2);
-      rightX = d3.event.x;
-    } else {
-      // Update the rect as though it is the left margin
-      d3.select(this)
-        .select(".rule-rect-outside")
-        .attr("width", d3.event.x - margin / 2);
-      d3.select(this)
-        .select(".rule-rect-outside")
-        .attr("x", -d3.event.x + margin / 2);
-      leftX = d3.event.x;
-    }
-    // Update the inside rect
-    d3.select(".rule-rect-inside")
-      .attr("x", leftX)
-      .attr("width", rightX - leftX);
+  const dragHandler = d3.drag().on("drag", function () {
+    dragLineRuleEvent(this, width, margin, xScale, data);
   });
   dragHandler(svg.selectAll(".line-rule-container"));
+}
+
+/**
+ * Handles relocation of graph line rules
+ * @param {g} g SVG g element
+ * @param {Number} width Width of SVG element
+ * @param {Number} margin Margin within the SVG to the graph
+ * @param {d3.scaleLinear} xScale Scale for the x axis
+ * @param {Array} data Array of numbers plotted by the histogram
+ */
+function dragLineRuleEvent(g, width, margin, xScale, data) {
+  if (d3.event.x > width + margin / 2) {
+    // Don't let drag off the right of the svg
+    d3.event.x = width + margin / 2;
+  }
+  if (d3.event.x < margin / 2) {
+    // Don't let drag off the left of the svg
+    d3.event.x = margin / 2;
+  }
+
+  const isRightRule = d3
+    .select(g)
+    .select(".rule-rect-outside")
+    .attr("class")
+    .includes("right");
+
+  // https://stackoverflow.com/questions/38224875/how-can-d3-transform-be-used-in-d3-v4/38230545#38230545
+  let rightX =
+    d3.select(".rule-right").node().transform.baseVal[0].matrix.e - margin / 2;
+  let leftX =
+    d3.select(".rule-left").node().transform.baseVal[0].matrix.e - margin / 2;
+
+  const leftPercentile = getPercentile(data, xScale.invert(leftX));
+  const rightPercentile = 100 - getPercentile(data, xScale.invert(rightX));
+
+  let textPrefixPercent = "Above";
+  let percentile = rightPercentile;
+  let textAlign = "start";
+
+  if (isRightRule) {
+    // Ensure that the rules do not cross
+    if (d3.event.x < leftX + margin / 2) {
+      d3.event.x = leftX + margin / 2;
+    }
+  } else {
+    // Ensure that the rules do not cross
+    if (d3.event.x > rightX + margin / 2) {
+      d3.event.x = rightX + margin / 2;
+    }
+    textPrefixPercent = "Below";
+    percentile = leftPercentile;
+    textAlign = "end";
+  }
+
+  d3.select(g).attr("transform", "translate(" + d3.event.x + ",0)");
+  // Update text
+  d3.select(g)
+    .select(".rule-text")
+    .text("X=" + roundNDecsFixed(xScale.invert(d3.event.x - margin / 2)))
+    .append("tspan")
+    .attr("x", 0)
+    .attr("dy", "1.2em")
+    .text(textPrefixPercent + " limit: " + roundNDecsFixed(percentile, 1) + "%")
+    .attr("text-anchor", textAlign)
+    .attr("class", "rule-text-percent");
+
+  // Update rects
+  if (isRightRule) {
+    // Update the rect as though it is the right margin
+    d3.select(g)
+      .select(".rule-rect-outside")
+      .attr("width", width - d3.event.x + margin / 2);
+  } else {
+    // Update the rect as though it is the left margin
+    d3.select(g)
+      .select(".rule-rect-outside")
+      .attr("width", d3.event.x - margin / 2);
+    d3.select(g)
+      .select(".rule-rect-outside")
+      .attr("x", -d3.event.x + margin / 2);
+  }
+  // Update the inside rect
+  d3.select(".rule-rect-inside")
+    .attr("x", leftX + margin / 2)
+    .attr("width", rightX - leftX);
+
+  // Update the inside text
+  d3.select(".rule-text-within")
+    .text(
+      "CPK: " +
+        roundNDecsFixed(
+          getCPK(data, xScale.invert(rightX), xScale.invert(leftX))
+        )
+    )
+    .attr("class", "rule-text-within")
+    .append("tspan")
+    .attr("x", 0)
+    .attr("dy", "1.2em")
+    .text(
+      "Within limits: " +
+        roundNDecsFixed(100 - rightPercentile - leftPercentile, 1) +
+        "%"
+    )
+    .attr("text-anchor", "end");
 }
 
 /**
  *  Adds a line rule to a graph
  * @param {Element} svg SVG Element to add the line rules to
  * @param {boolean} isRightSide Is the rule to be added on the right?
- * @param {number} startX The start X value of the rule in the SVG's coordinates
+ * @param {number} leftX The X value of the left rule in the SVG's coordinates
+ * @param {number} rightX The X value of the right rule in the SVG's coordinates
  * @param {number} margin Margin added around the graph within the svg
  * @param {number} width Width of the svg
  * @param {number} height Height of the svg
  * @param {d3.scaleLinear} xScale Scale for the x axis
+ * @param {Array} data Array of numbers plotted by the histogram
  */
 function createLineRule(
   svg,
   isRightSide,
-  startX,
+  leftX,
+  rightX,
   margin,
   width,
   height,
-  xScale
+  xScale,
+  data
 ) {
   let className = "rule-right";
   let rectX = 0;
+  let startX = 0;
+  isRightSide ? (startX = rightX) : (startX = leftX);
   let rectWidth = width - startX + margin / 2;
-  let textTransformX = -180;
+  let textTransformX = 30;
   let textAlign = "start";
-  let textPrefix = "Upper";
+  let textPrefixPercent = "Above";
+
+  const leftPercentile = getPercentile(data, xScale.invert(leftX));
+  const rightPercentile = 100 - getPercentile(data, xScale.invert(rightX));
+  let percentile = rightPercentile;
+
+  const lineRuleContainer = svg
+    .append("g")
+    .attr("transform", "translate(" + startX + ",0)");
 
   if (!isRightSide) {
     className = "rule-left";
@@ -523,13 +598,39 @@ function createLineRule(
     rectWidth = startX - margin / 2;
     textTransformX *= -1;
     textAlign = "end";
-    textPrefix = "Lower";
+    textPrefixPercent = "Below";
+    percentile = leftPercentile;
+  } else {
+    lineRuleContainer
+      .append("text")
+      .attr("text-anchor", "end")
+      .attr(
+        "transform",
+        "translate(" + -textTransformX + "," + (margin / 2 + 20) + ")"
+      )
+      .text(
+        "CPK: " +
+          roundNDecsFixed(
+            getCPK(
+              data,
+              xScale.invert(rightX - margin / 2),
+              xScale.invert(leftX - margin / 2)
+            )
+          )
+      )
+      .attr("class", "rule-text-within")
+      .append("tspan")
+      .attr("x", 0)
+      .attr("dy", "1.2em")
+      .text(
+        "Within limits: " +
+          roundNDecsFixed(100 - rightPercentile - leftPercentile, 1) +
+          "%"
+      )
+      .attr("text-anchor", "end");
   }
 
-  const lineRuleContainer = svg
-    .append("g")
-    .attr("transform", "translate(" + startX + ",0)")
-    .attr("class", "line-rule-container " + className);
+  lineRuleContainer.attr("class", "line-rule-container " + className);
 
   lineRuleContainer
     .append("rect")
@@ -568,12 +669,14 @@ function createLineRule(
       "transform",
       "translate(" + textTransformX + "," + (margin / 2 + 20) + ")"
     )
-    .text(
-      textPrefix +
-        " Limit: X=" +
-        (xScale.invert((margin / 2) * 100) / 100).toFixed(2)
-    )
-    .attr("class", "rule-text");
+    .text("X=" + xScale.invert(startX - margin / 2).toFixed(2))
+    .attr("class", "rule-text")
+    .append("tspan")
+    .attr("x", 0)
+    .attr("dy", "1.2em")
+    .text(textPrefixPercent + " limit: " + roundNDecsFixed(percentile, 1) + "%")
+    .attr("text-anchor", textAlign)
+    .attr("class", "rule-text-percent");
 }
 
 /**
@@ -638,11 +741,8 @@ function roundNDecs(num, places = 2) {
  */
 function StatisticalResults(data) {
   this.numSamples = data.length;
-  this.mean = data.reduce((a, b) => a + b, 0) / this.numSamples;
-  this.std = Math.sqrt(
-    data.map((x) => Math.pow(x - this.mean, 2)).reduce((a, b) => a + b) /
-      this.numSamples
-  );
+  this.mean = calcMean(data);
+  this.std = calcSTD(data, this.mean);
   const midpoint = Math.floor(data.length / 2);
   // If odd take midpoint
   // If even take avg of midpoints
@@ -691,7 +791,7 @@ function getPercentileRange(data, percent) {
 /**
  * Compute the absolute range (worst case) of a tolerance stackup
  * @param {Object} stackRows Object holding StackRow objects at numeric indices
- * @returns {Array} [min value, max value]
+ * @return {Array} [min value, max value]
  */
 function getAbsoluteRange(stackRows) {
   let min = 0;
@@ -701,4 +801,55 @@ function getAbsoluteRange(stackRows) {
     max += stackRows[i].nominal + stackRows[i].tolerance;
   }
   return [min, max];
+}
+
+/**
+ * Determines the percentile at which the given value occurs in the data
+ * @param {Array} data Ordered array of numbers to compute a percentile for
+ * @param {Number} value A value at which the percentile should be determined
+ * @return {Number} Percentile
+ */
+function getPercentile(data, value) {
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] > value) {
+      return (i / data.length) * 100;
+    }
+  }
+}
+
+/**
+ * Computes a CPK
+ * @param {Number} data Data to calculate CPK for
+ * @param {Number} usl Upper specification limit
+ * @param {Number} lsl Lower specification limit
+ * @return {Number}
+ */
+function getCPK(data, usl, lsl) {
+  console.log("LSL: " + lsl + "USL" + usl);
+  const mean = calcMean(data);
+  const std = calcSTD(data, mean);
+  const CPU = (usl - mean) / 3 / std;
+  const CPL = (mean - lsl) / 3 / std;
+  return Math.min(CPU, CPL);
+}
+
+/**
+ * Computes the arithmetic mean of an array of numbers
+ * @param {Array} data Array of numbers
+ * @return {Number} Arithmetic mean
+ */
+function calcMean(data) {
+  return data.reduce((a, b) => a + b, 0) / data.length;
+}
+
+/**
+ * Computes the standard deviation of an array of numbers
+ * @param {Array} data Array of numbers
+ * @param {Number} mean Arithmetic mean of data
+ * @return {Number} Standard deviation
+ */
+function calcSTD(data, mean) {
+  return Math.sqrt(
+    data.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / data.length
+  );
 }
