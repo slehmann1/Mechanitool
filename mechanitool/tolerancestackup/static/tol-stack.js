@@ -25,7 +25,7 @@ $(document).ready(function () {
     addRow(pageState.currentRowNum);
   });
 
-  $("#calculate").click(function () {
+  $("#advance").click(function () {
     if (pageState.page == State.pages.Setup) {
       stackRows = new StackRows();
       console.log("Wrote: ");
@@ -45,13 +45,16 @@ $(document).ready(function () {
           displayResults(data, stackRows);
         },
       });
+    } else if (pageState.page == State.pages.Results) {
+      displayReport();
     }
   });
 
   $("#back").click(function () {
-    console.log("Button Pressed");
     if (pageState.page == State.pages.Results) {
       displaySetup();
+    } else if (pageState.page == State.pages.Report) {
+      console.log("RETURN TO RESULTS");
     }
   });
 
@@ -232,10 +235,15 @@ function StackRows() {
  */
 function displaySetup() {
   pageState.page = State.pages.Setup;
+  $("#advance").html(
+    '<i class="fa-solid fa-calculator"></i>&ensp;'
+    +'Calculate &ensp;<i class="fa-solid fa-arrow-right"></i>'
+  );
   $("#setup-pane").css("display", "block");
   $("#add-step").css("visibility", "visible");
   $("#back").css("visibility", "hidden");
   $("#results-container").css("display", "none");
+  $("#advance").css("visibility", "visible");
 }
 
 /**
@@ -245,13 +253,168 @@ function displaySetup() {
  */
 function displayResults(data, stackRows) {
   pageState.page = State.pages.Results;
+  $("#advance").html(
+    '<i class="fa-regular fa-file-lines"></i>&ensp;'
+    +'Create Report &ensp; <i class="fa-solid fa-arrow-right"></i>'
+  );
   $("#setup-pane").css("display", "none");
   $("#add-step").css("visibility", "hidden");
   $("#back").css("visibility", "visible");
   $("#results-container").css("display", "block");
-  console.log("Run Histogram");
+  $("#advance").css("visibility", "visible");
   createHistogram(data["values"]);
   updateStatisticalTables(data["values"], stackRows);
+}
+
+/**
+ * Displays the report creation page
+ */
+function displayReport() {
+  console.log("REPORT");
+  pageState.page = State.pages.Report;
+
+  $("#advance").css("visibility", "hidden");
+  $("#setup-pane").css("display", "none");
+  $("#add-step").css("visibility", "hidden");
+  $("#back").css("visibility", "visible");
+  $("#results-container").css("display", "none");
+
+  // TODO: ADD report title, revision, name
+  createPDF();
+}
+
+/**
+ * Creates a pdf report of the tolerance stackup
+ */
+function createPDF() {
+  const doc = new jsPDF();
+  doc.text("Unicode σ", 10, 10);
+  // A4 page size: 210 X 297 mm
+  // Default left margin: 14mm
+  doc.text("Overview", 14, 20);
+
+  // Statistical table
+  let columns = [
+    { title: "Parameter", dataKey: "Parameter" },
+    { title: "Value", dataKey: "Value" },
+  ];
+
+  let rows = [
+    { Parameter: "Mean", Value: $("#tab-mean").html() },
+    { Parameter: "Median", Value: $("#tab-median").html() },
+    { Parameter: "Standard Deviation", Value: $("#tab-std").html() },
+    { Parameter: "Number Of Samples", Value: $("#tab-samples").html() },
+  ];
+
+  let columnStyles = {
+    0: { cellWidth: 91 },
+    1: { cellWidth: 91 },
+  };
+  addTable(doc, columns, rows, columnStyles);
+
+  // Results table
+  columns = [
+    { title: "Stackup Type", dataKey: "Type" },
+    { title: "Minimum", dataKey: "Minimum" },
+    { title: "Maximum", dataKey: "Maximum" },
+  ];
+
+  rows = [
+    {
+      Type: "Worst Case (Absolute) Tolerance Stackup",
+      Minimum: $("#tab-abs-min").html(),
+      Maximum: $("#tab-abs-max").html(),
+    },
+    {
+      Type: "Statistical (Three Sigma) Tolerance Stackup",
+      Minimum: $("#tab-stat-min").html(),
+      Maximum: $("#tab-stat-max").html(),
+    },
+    {
+      Type: "Range of Simulated Results",
+      Minimum: $("#tab-sim-min").html(),
+      Maximum: $("#tab-sim-max").html(),
+    },
+  ];
+  columnStyles = {
+    0: { cellWidth: 92 },
+    1: { cellWidth: 45 },
+    2: { cellWidth: 45 },
+  };
+
+  addTable(doc, columns, rows, columnStyles);
+
+  // Results table
+  columns = [
+    { title: "Range", dataKey: "Range" },
+    { title: "Minimum", dataKey: "Minimum" },
+    { title: "Maximum", dataKey: "Maximum" },
+  ];
+
+  rows = [
+    {
+      Range: "70% of Samples Fall Between",
+      Minimum: $("#tab-70-min").html(),
+      Maximum: $("#tab-70-max").html(),
+    },
+    {
+      Range: "95% of Samples Fall Between",
+      Minimum: $("#tab-95-min").html(),
+      Maximum: $("#tab-95-max").html(),
+    },
+    {
+      Range: "99% of Samples Fall Between",
+      Minimum: $("#tab-99-min").html(),
+      Maximum: $("#tab-99-max").html(),
+    },
+    {
+      Range: "99.9% of Samples Fall Between",
+      Minimum: $("#tab-99_9-min").html(),
+      Maximum: $("#tab-99_9-max").html(),
+    },
+    {
+      Range: "99.99% of Samples Fall Between",
+      Minimum: $("#tab-99_99-min").html(),
+      Maximum: $("#tab-99_99-max").html(),
+    },
+  ];
+  columnStyles = {
+    0: { cellWidth: 92 },
+    1: { cellWidth: 45 },
+    2: { cellWidth: 45 },
+  };
+
+  addTable(doc, columns, rows, columnStyles);
+
+  doc.save("a4.pdf");
+}
+
+/**
+ * Adds a formatted table to a JSPDF document
+ * @param {jsPDF} doc JSPDF Document to add the table to
+ * @param {Array} columns Array of column header objects
+ * @param {Array} rows Array of row objects
+ * @param {Object} columnStyles Object of cell widths
+ */
+function addTable(doc, columns, rows, columnStyles) {
+  doc.autoTable(columns, rows, {
+    margin: { top: 25 },
+    headStyles: {
+      lineWidth: 0.25,
+      fillColor: [0, 0, 0],
+      textColor: [255, 255, 255],
+      lineColor: [0, 0, 0],
+      halign: "center",
+    },
+    bodyStyles: {
+      lineColor: [0, 0, 0],
+      lineWidth: 0.25,
+      halign: "center",
+    },
+    theme: "grid",
+    columnStyles,
+    columnWidth: "auto",
+  });
 }
 
 /**
