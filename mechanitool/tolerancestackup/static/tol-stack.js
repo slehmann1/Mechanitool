@@ -487,8 +487,8 @@ function createLineRule(
   let className = "rule-right";
   let rectX = 0;
   let rectWidth = width - startX + margin / 2;
-  let textTransformX = 200;
-  let textAlign = "end";
+  let textTransformX = - 180;
+  let textAlign = "start";
   let textPrefix = "Upper";
 
   if (!isRightSide) {
@@ -496,7 +496,7 @@ function createLineRule(
     rectX = -startX + margin / 2;
     rectWidth = startX - margin / 2;
     textTransformX *= -1;
-    textAlign = "start";
+    textAlign = "end";
     textPrefix = "Lower";
   }
 
@@ -574,6 +574,11 @@ function updateStatisticalTables(data) {
   $("#tab-99_9-max").html(round2Decs(rangeResults.percentSample99_9[1]));
   $("#tab-99_99-min").html(round2Decs(rangeResults.percentSample99_99[0]));
   $("#tab-99_99-max").html(round2Decs(rangeResults.percentSample99_99[1]));
+
+  $("#tab-stat-min").html(round2Decs(statResults.statMin));
+  $("#tab-stat-max").html(round2Decs(statResults.statMax));
+  $("#tab-sim-min").html(round2Decs(statResults.min));
+  $("#tab-sim-max").html(round2Decs(statResults.max));
 }
 
 /**
@@ -603,6 +608,12 @@ function StatisticalResults(data) {
     data.length % 2 === 1
       ? data[midpoint]
       : (data[midpoint - 1] + data[midpoint]) / 2;
+
+  this.min = Math.min(...data);
+  this.max = Math.max(...data);
+
+  this.statMin = this.mean - 3 * this.std;
+  this.statMax = this.mean + 3 * this.std;
 }
 
 /**
