@@ -37,18 +37,35 @@
     <div id="setup-pane">
       <div class="stack-container" id="stack-container">
         <div class="row stack-step" id="row-0">
-          <div class="col-md-1 align-self-center">
+          <div class="col-md-2 align-self-center">
             <h4 class="col-md-1 align-self-center stack-num" id="stack-num">
               1
             </h4>
+            <input
+              class="form-control stack-name"
+              id="stack-name"
+              type="text"
+              placeholder="Name"
+              style="display: inline; white-space: nowrap"
+            />
           </div>
 
           <div class="col-md-2 align-self-center">
             <input
               class="form-control"
-              id="stack-name"
-              type="text"
-              placeholder="Name"
+              id="nominal"
+              type="number"
+              placeholder="Nominal"
+              style="display: inline; width: 45%"
+            />
+            <p class="pm">±</p>
+            <input
+              class="form-control"
+              id="tolerance"
+              type="number"
+              placeholder="Tolerance"
+              style="display: inline; width: 45%"
+              width="20px"
             />
           </div>
 
@@ -63,15 +80,6 @@
                 <option>Normal</option>
                 <option>Uniform</option>
               </select>
-            </div>
-          </div>
-
-          <div class="col-md-1 align-self-center">
-            <div class="input-group">
-              <div class="input-group-prepend mean" id="mean-prepend">
-                <span class="input-group-text mean" id="mean-label">Mean</span>
-              </div>
-              <input class="form-control" type="number" id="mean" />
             </div>
           </div>
 
@@ -158,11 +166,11 @@
                 font-size: 12px;
               }
               .axis line {
-                stroke: #112d4e;
+                stroke: #3f72af;
               }
 
               .axis path {
-                stroke: #112d4e;
+                stroke: #3f72af;
               }
               .line {
                 stroke-width: 5px;
@@ -175,11 +183,11 @@
               }
               .rule-line {
                 stroke-width: 3px;
-                stroke: #112d4e;
+                stroke: #3f72af;
               }
               .rule-circle {
                 stroke-width: 3px;
-                stroke: #112d4e;
+                stroke: #3f72af;
                 fill: #dbe2ef;
               }
               .rule-rect-inside {
@@ -263,8 +271,8 @@
             <tbody>
               <tr>
                 <th scope="row">Worst Case (Absolute) Tolerance Stackup:</th>
-                <td id="tab-worst-min">1</td>
-                <td id="tab-worst-max">1</td>
+                <td id="tab-abs-min">1</td>
+                <td id="tab-abs-max">1</td>
               </tr>
               <tr>
                 <th scope="row">Statistical (3σ) Tolerance Stackup:</th>

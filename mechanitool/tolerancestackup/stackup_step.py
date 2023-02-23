@@ -16,7 +16,7 @@ class StackupStep:
                 usl = float(stackup_dict["usl"])
 
             self.distribution = Normal(
-                float(stackup_dict["mean"]), float(stackup_dict["std"]), lower_lim=lsl, upper_lim=usl)
+                float(stackup_dict["nominal"]), float(stackup_dict["std"]), lower_lim=lsl, upper_lim=usl)
 
         elif stackup_dict["distribution"] == "Uniform":
             # TODO: ADD

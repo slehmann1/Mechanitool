@@ -22,8 +22,15 @@
 
 .stack-num {
   text-align: right;
-  margin: auto;
   padding-right: 0.5rem;
+  display: inline;
+  width: 20% !important;
+}
+
+.stack-name {
+  display: inline;
+  width: 80% !important;
+  float: right;
 }
 
 .button-row {
@@ -68,11 +75,17 @@ a:active {
 .form-control {
   min-width: 3rem !important;
   border-color: #dbe2ef !important;
+  color: #112d4e !important;
 }
 
 .form-control:focus {
   border-color: #3f72af !important;
   box-shadow: 0 0 0 0.2rem rgba(63, 114, 175, 0.2) !important;
+  color: #112d4e !important;
+}
+
+.form-control::placeholder {
+  color: #112d4e !important;
 }
 
 .form-select:focus {
@@ -160,4 +173,14 @@ th {
 
 html {
   overflow-x: hidden;
+}
+
+.pm {
+  color: #112d4e;
+  font-size: large;
+  display: inline-block;
+  font-weight: 600;
+  width: 5%;
+  text-align: center;
+  margin: auto;
 }

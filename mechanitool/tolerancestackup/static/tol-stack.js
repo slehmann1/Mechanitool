@@ -42,7 +42,7 @@ $(document).ready(function () {
         success: function (data) {
           console.log("Recieved: ");
           console.log(data);
-          displayResults(data);
+          displayResults(data, stackRows);
         },
       });
     }
@@ -53,6 +53,11 @@ $(document).ready(function () {
     if (pageState.page == State.pages.Results) {
       displaySetup();
     }
+  });
+
+  // Input Events
+  $("#tolerance").on("input", function () {
+    toleranceInputChange(this);
   });
 });
 
@@ -92,6 +97,24 @@ function addRow(rowNum) {
   row.find("#delete").click(function () {
     deleteRow(row);
   });
+  row.find("#tolerance").on("input", function () {
+    toleranceInputChange(this);
+  });
+}
+
+/**
+ * Event for when a tolerance input changes value, updating the STD input
+ * @param {JQueryObject} obj The input that has changed value
+ */
+function toleranceInputChange(obj) {
+  if (!isNaN($(obj).val()) && $(obj).val() != "") {
+    console.log($(obj).val());
+    $(obj)
+      .parent()
+      .parent()
+      .find("#std")
+      .val(roundNDecs($(obj).val() / 6, 3)); // Update based on 3σ assumption
+  }
 }
 
 /**
@@ -115,7 +138,8 @@ function updateRow(row, rowNum, resetRow = false) {
   if (resetRow) {
     row.find("#stack-name").val("");
     row.find("#dist").val("Normal");
-    row.find("#mean").val("");
+    row.find("#nominal").val("");
+    row.find("#tolerance").val("");
     row.find("#std").val("");
     row.find("#lower-cutoff").val("");
     row.find("#upper-cutoff").val("");
@@ -193,8 +217,9 @@ function StackRows() {
       number: i + 1,
       name: row.find("#stack-name").val(),
       distribution: row.find("#dist").val(),
-      mean: parseFloat(row.find("#mean").val()),
+      nominal: parseFloat(row.find("#nominal").val()),
       std: parseFloat(row.find("#std").val()),
+      tolerance: parseFloat(row.find("#tolerance").val()),
       lsl: parseFloat(row.find("#lower-cutoff").val()),
       usl: parseFloat(row.find("#upper-cutoff").val()),
     };
@@ -216,8 +241,9 @@ function displaySetup() {
 /**
  * Displays the results pane for a tolerance stack
  * @param {Array} data The data to populate the histogram with
+ * @param {Object} stackRows Object holding StackRow objects at numeric indices
  */
-function displayResults(data) {
+function displayResults(data, stackRows) {
   pageState.page = State.pages.Results;
   $("#setup-pane").css("display", "none");
   $("#add-step").css("visibility", "hidden");
@@ -225,7 +251,7 @@ function displayResults(data) {
   $("#results-container").css("display", "block");
   console.log("Run Histogram");
   createHistogram(data["values"]);
-  updateStatisticalTables(data["values"]);
+  updateStatisticalTables(data["values"], stackRows);
 }
 
 /**
@@ -437,7 +463,7 @@ function createGraphRules(svg, margin, height, width, xScale) {
       .text(
         textPrefix +
           " Limit: X=" +
-          round2Decs(xScale.invert(d3.event.x - margin / 2))
+          roundNDecsFixed(xScale.invert(d3.event.x - margin / 2))
       );
 
     // Update rects
@@ -487,7 +513,7 @@ function createLineRule(
   let className = "rule-right";
   let rectX = 0;
   let rectWidth = width - startX + margin / 2;
-  let textTransformX = - 180;
+  let textTransformX = -180;
   let textAlign = "start";
   let textPrefix = "Upper";
 
@@ -553,41 +579,57 @@ function createLineRule(
 /**
  * Updates statistical tables on the page
  * @param {Array} data Array of data
+ * @param {Object} stackRows Object holding StackRow objects at numeric indices
  */
-function updateStatisticalTables(data) {
+function updateStatisticalTables(data, stackRows) {
   // Update stat results table
   const statResults = new StatisticalResults(data);
 
-  $("#tab-mean").html(round2Decs(statResults.mean));
-  $("#tab-median").html(round2Decs(statResults.median));
-  $("#tab-std").html(round2Decs(statResults.std));
+  $("#tab-mean").html(roundNDecsFixed(statResults.mean));
+  $("#tab-median").html(roundNDecsFixed(statResults.median));
+  $("#tab-std").html(roundNDecsFixed(statResults.std));
   $("#tab-samples").html(statResults.numSamples);
 
-  const rangeResults = new RangeResults(data);
-  $("#tab-70-min").html(round2Decs(rangeResults.percentSample70[0]));
-  $("#tab-70-max").html(round2Decs(rangeResults.percentSample70[1]));
-  $("#tab-95-min").html(round2Decs(rangeResults.percentSample95[0]));
-  $("#tab-95-max").html(round2Decs(rangeResults.percentSample95[1]));
-  $("#tab-99-min").html(round2Decs(rangeResults.percentSample99[0]));
-  $("#tab-99-max").html(round2Decs(rangeResults.percentSample99[1]));
-  $("#tab-99_9-min").html(round2Decs(rangeResults.percentSample99_9[0]));
-  $("#tab-99_9-max").html(round2Decs(rangeResults.percentSample99_9[1]));
-  $("#tab-99_99-min").html(round2Decs(rangeResults.percentSample99_99[0]));
-  $("#tab-99_99-max").html(round2Decs(rangeResults.percentSample99_99[1]));
+  const rangeResults = new RangeResults(data, stackRows);
+  $("#tab-70-min").html(roundNDecsFixed(rangeResults.percentSample70[0]));
+  $("#tab-70-max").html(roundNDecsFixed(rangeResults.percentSample70[1]));
+  $("#tab-95-min").html(roundNDecsFixed(rangeResults.percentSample95[0]));
+  $("#tab-95-max").html(roundNDecsFixed(rangeResults.percentSample95[1]));
+  $("#tab-99-min").html(roundNDecsFixed(rangeResults.percentSample99[0]));
+  $("#tab-99-max").html(roundNDecsFixed(rangeResults.percentSample99[1]));
+  $("#tab-99_9-min").html(roundNDecsFixed(rangeResults.percentSample99_9[0]));
+  $("#tab-99_9-max").html(roundNDecsFixed(rangeResults.percentSample99_9[1]));
+  $("#tab-99_99-min").html(roundNDecsFixed(rangeResults.percentSample99_99[0]));
+  $("#tab-99_99-max").html(roundNDecsFixed(rangeResults.percentSample99_99[1]));
 
-  $("#tab-stat-min").html(round2Decs(statResults.statMin));
-  $("#tab-stat-max").html(round2Decs(statResults.statMax));
-  $("#tab-sim-min").html(round2Decs(statResults.min));
-  $("#tab-sim-max").html(round2Decs(statResults.max));
+  $("#tab-stat-min").html(roundNDecsFixed(statResults.statMin));
+  $("#tab-stat-max").html(roundNDecsFixed(statResults.statMax));
+  $("#tab-sim-min").html(roundNDecsFixed(statResults.min));
+  $("#tab-sim-max").html(roundNDecsFixed(statResults.max));
+
+  absRange = getAbsoluteRange(stackRows);
+  $("#tab-abs-min").html(roundNDecsFixed(absRange[0]));
+  $("#tab-abs-max").html(roundNDecsFixed(absRange[1]));
 }
 
 /**
- * Rounds a floating point number to 2 decimal places
+ * Rounds a floating point number to N fixed decimal places
  * @param {Number} num A floating point number to be rounded
+ * @param {Number} places A floating point number to be rounded
  * @return {string} Rounded number in a string representation
  */
-function round2Decs(num) {
-  return (Math.round(num * 100) / 100).toFixed(2);
+function roundNDecsFixed(num, places = 2) {
+  return (Math.round(num * 10 ** places) / 10 ** places).toFixed(places);
+}
+
+/**
+ * Rounds a floating point number to N decimal places, dropping trailing zeroes
+ * @param {Number} num A floating point number to be rounded
+ * @param {Number} places A floating point number to be rounded
+ * @return {string} Rounded number in a string representation
+ */
+function roundNDecs(num, places = 2) {
+  return Math.round(num * 10 ** places) / 10 ** places;
 }
 
 /**
@@ -638,11 +680,25 @@ function RangeResults(data) {
 function getPercentileRange(data, percent) {
   // Samples permitted on either side
   const samples = Math.floor((data.length * percent) / 200);
-  console.log(samples);
   const i = data.length / 2 - samples < 0 ? 0 : data.length / 2 - samples;
   const j =
     data.length / 2 + samples > data.length - 1
       ? data.length - 1
       : data.length / 2 + samples;
   return [data[i], data[j]];
+}
+
+/**
+ * Compute the absolute range (worst case) of a tolerance stackup
+ * @param {Object} stackRows Object holding StackRow objects at numeric indices
+ * @returns {Array} [min value, max value]
+ */
+function getAbsoluteRange(stackRows) {
+  let min = 0;
+  let max = 0;
+  for (let i = 0; i < Object.keys(stackRows).length; i++) {
+    min += stackRows[i].nominal - stackRows[i].tolerance;
+    max += stackRows[i].nominal + stackRows[i].tolerance;
+  }
+  return [min, max];
 }
