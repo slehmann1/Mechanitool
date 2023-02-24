@@ -236,8 +236,8 @@ function StackRows() {
 function displaySetup() {
   pageState.page = State.pages.Setup;
   $("#advance").html(
-    '<i class="fa-solid fa-calculator"></i>&ensp;'
-    +'Calculate &ensp;<i class="fa-solid fa-arrow-right"></i>'
+    '<i class="fa-solid fa-calculator"></i>&ensp;' +
+      'Calculate &ensp;<i class="fa-solid fa-arrow-right"></i>'
   );
   $("#setup-pane").css("display", "block");
   $("#add-step").css("visibility", "visible");
@@ -254,8 +254,8 @@ function displaySetup() {
 function displayResults(data, stackRows) {
   pageState.page = State.pages.Results;
   $("#advance").html(
-    '<i class="fa-regular fa-file-lines"></i>&ensp;'
-    +'Create Report &ensp; <i class="fa-solid fa-arrow-right"></i>'
+    '<i class="fa-regular fa-file-lines"></i>&ensp;' +
+      'Create Report &ensp; <i class="fa-solid fa-arrow-right"></i>'
   );
   $("#setup-pane").css("display", "none");
   $("#add-step").css("visibility", "hidden");
@@ -383,10 +383,28 @@ function createPDF() {
     1: { cellWidth: 45 },
     2: { cellWidth: 45 },
   };
-
   addTable(doc, columns, rows, columnStyles);
 
-  doc.save("a4.pdf");
+  // Add SVG to pdf
+  const svg = document.getElementsByClassName("svg")[0];
+  let svgText = svg.innerHTML;
+
+  // Surround text with g tags (Format svg appropriately)
+  svgText = "<g>".concat(svgText);
+  svgText = svgText.concat("</g>");
+
+  const canvas = document.createElement("canvas");
+  canvas.width = svg.width.baseVal.value;
+  canvas.height = svg.height.baseVal.value;
+  const context = canvas.getContext("2d");
+
+  const v = canvg.Canvg.fromString(context, svgText);
+  v.start();
+  const imgData = canvas.toDataURL("image/png");
+  doc.addImage(imgData, "PNG", 14, 100, 191, 100);
+
+  // TODO: Name properly
+  doc.save("ToleranceStackupReport.pdf");
 }
 
 /**

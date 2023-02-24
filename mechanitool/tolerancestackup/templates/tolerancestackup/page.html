@@ -31,6 +31,7 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.6/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/3.0.10/umd.js"></script>
   </head>
 
   <body class="background">
@@ -150,7 +151,7 @@
     <div id="results-container" style="display: none">
       <div class="row">
         <div class="results-graph offset-1 col-md-7">
-          <svg style="width: 100%; height: 100%">
+          <svg style="width: 100%; height: 100%" class="svg" id="svg">
             <style class="style">
               .title {
                 fill: #112d4e;
@@ -207,7 +208,11 @@
           </svg>
         </div>
         <div class="col-md-3 align-self-center table-div">
-          <table class="table table-bordered table-hover" style="margin-top: 0" id = "stat-table">
+          <table
+            class="table table-bordered table-hover"
+            style="margin-top: 0"
+            id="stat-table"
+          >
             <tbody>
               <tr>
                 <th scope="row">Mean:</th>
@@ -225,7 +230,7 @@
             </tbody>
           </table>
 
-          <table class="table table-bordered table-hover" id = "range-table">
+          <table class="table table-bordered table-hover" id="range-table">
             <thead>
               <tr>
                 <th scope="col"></th>
@@ -262,7 +267,7 @@
             </tbody>
           </table>
 
-          <table class="table table-bordered table-hover" id = "results-table">
+          <table class="table table-bordered table-hover" id="results-table">
             <thead>
               <tr>
                 <th scope="col"></th>
