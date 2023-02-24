@@ -16,6 +16,7 @@ const HIST_BINS = 15;
 const pageState = new State();
 
 $(document).ready(function () {
+  let stackRows;
   // Update first row to update events:
   updateRow($("#row-0"), 0);
 
@@ -46,7 +47,7 @@ $(document).ready(function () {
         },
       });
     } else if (pageState.page == State.pages.Results) {
-      displayReport();
+      displayReport(stackRows);
     }
   });
 
@@ -269,7 +270,7 @@ function displayResults(data, stackRows) {
 /**
  * Displays the report creation page
  */
-function displayReport() {
+function displayReport(stackRows) {
   console.log("REPORT");
   pageState.page = State.pages.Report;
 
@@ -280,37 +281,94 @@ function displayReport() {
   $("#results-container").css("display", "none");
 
   // TODO: ADD report title, revision, name
-  createPDF();
+  createPDF(stackRows);
 }
 
 /**
  * Creates a pdf report of the tolerance stackup
+ * @param {Object} stackRows Object holding StackRow objects at numeric indices
  */
-function createPDF() {
+function createPDF(stackRows) {
   const doc = new jsPDF();
-  doc.text("Unicode σ", 10, 10);
   // A4 page size: 210 X 297 mm
   // Default left margin: 14mm
-  doc.text("Overview", 14, 20);
+  doc.text("Stackup Steps", 14, 20);
+
+  let columns = [
+    { title: "#", dataKey: "ID" },
+    { title: "Name", dataKey: "Name" },
+    { title: "Nominal", dataKey: "Nominal" },
+    { title: "Tolerance", dataKey: "Tolerance" },
+    { title: "Distribution", dataKey: "Distribution" },
+    { title: "Standard Deviation", dataKey: "STD" },
+    { title: "Lower Cutoff", dataKey: "LSL" },
+    { title: "Upper Cutoff", dataKey: "USL" },
+  ];
+
+  let rows = [];
+  console.log(stackRows);
+
+  for (let i = 0; i < Object.keys(stackRows).length; i++) {
+    // Add a row for the stackrow
+    rows.push({
+      ID: i + 1,
+      Name: stackRows[i].name,
+      Nominal: stackRows[i].nominal,
+      Tolerance: stackRows[i].tolerance,
+      STD: stackRows[i].std,
+      Distribution: stackRows[i].distribution,
+      LSL: stackRows[i].lsl,
+      USL: stackRows[i].usl,
+    });
+    console.log("ROW " + i);
+    console.log(rows);
+  }
+
+  let columnStyles = {};
+  addTable(doc, columns, rows, columnStyles);
+
+  let lineY = doc.previousAutoTable.finalY;
+
+  // Add SVG to pdf
+  const svg = document.getElementsByClassName("svg")[0];
+  let svgText = svg.innerHTML;
+
+  // Surround text with g tags (Format svg appropriately)
+  svgText = "<g>".concat(svgText);
+  svgText = svgText.concat("</g>");
+
+  const canvas = document.createElement("canvas");
+  canvas.width = svg.width.baseVal.value;
+  canvas.height = svg.height.baseVal.value;
+  const context = canvas.getContext("2d");
+
+  const v = canvg.Canvg.fromString(context, svgText);
+  v.start();
+  const imgData = canvas.toDataURL("image/png");
+  doc.addImage(imgData, "PNG", 14, lineY, 191, 100);
+
+  lineY = lineY + 110;
+
+  doc.text("Statistical Results", 14, lineY);
 
   // Statistical table
-  let columns = [
+  columns = [
     { title: "Parameter", dataKey: "Parameter" },
     { title: "Value", dataKey: "Value" },
   ];
 
-  let rows = [
+  rows = [
     { Parameter: "Mean", Value: $("#tab-mean").html() },
     { Parameter: "Median", Value: $("#tab-median").html() },
     { Parameter: "Standard Deviation", Value: $("#tab-std").html() },
     { Parameter: "Number Of Samples", Value: $("#tab-samples").html() },
   ];
 
-  let columnStyles = {
+  columnStyles = {
     0: { cellWidth: 91 },
     1: { cellWidth: 91 },
   };
-  addTable(doc, columns, rows, columnStyles);
+  addTable(doc, columns, rows, columnStyles, lineY + 5);
 
   // Results table
   columns = [
@@ -385,24 +443,6 @@ function createPDF() {
   };
   addTable(doc, columns, rows, columnStyles);
 
-  // Add SVG to pdf
-  const svg = document.getElementsByClassName("svg")[0];
-  let svgText = svg.innerHTML;
-
-  // Surround text with g tags (Format svg appropriately)
-  svgText = "<g>".concat(svgText);
-  svgText = svgText.concat("</g>");
-
-  const canvas = document.createElement("canvas");
-  canvas.width = svg.width.baseVal.value;
-  canvas.height = svg.height.baseVal.value;
-  const context = canvas.getContext("2d");
-
-  const v = canvg.Canvg.fromString(context, svgText);
-  v.start();
-  const imgData = canvas.toDataURL("image/png");
-  doc.addImage(imgData, "PNG", 14, 100, 191, 100);
-
   // TODO: Name properly
   doc.save("ToleranceStackupReport.pdf");
 }
@@ -413,9 +453,10 @@ function createPDF() {
  * @param {Array} columns Array of column header objects
  * @param {Array} rows Array of row objects
  * @param {Object} columnStyles Object of cell widths
+ * @param {Number} startY Margin at the top of the table
  */
-function addTable(doc, columns, rows, columnStyles) {
-  doc.autoTable(columns, rows, {
+function addTable(doc, columns, rows, columnStyles, startY = undefined) {
+  style = {
     margin: { top: 25 },
     headStyles: {
       lineWidth: 0.25,
@@ -432,7 +473,12 @@ function addTable(doc, columns, rows, columnStyles) {
     theme: "grid",
     columnStyles,
     columnWidth: "auto",
-  });
+  };
+
+  if (startY) {
+    style.startY = startY;
+  }
+  doc.autoTable(columns, rows, style);
 }
 
 /**
