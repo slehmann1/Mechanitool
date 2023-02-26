@@ -17,6 +17,7 @@ const pageState = new State();
 
 $(document).ready(function () {
   let stackRows;
+  let archivedData;
   // Update first row to update events:
   updateRow($("#row-0"), 0);
 
@@ -42,7 +43,7 @@ $(document).ready(function () {
         processData: false,
         success: function (data) {
           console.log("Recieved: ");
-          console.log(data);
+          archivedData = data;
           displayResults(data, stackRows);
         },
       });
@@ -55,7 +56,7 @@ $(document).ready(function () {
     if (pageState.page == State.pages.Results) {
       displaySetup();
     } else if (pageState.page == State.pages.Report) {
-      console.log("RETURN TO RESULTS");
+      displayResults(archivedData, stackRows);
     }
   });
 
@@ -241,6 +242,7 @@ function displaySetup() {
       'Calculate &ensp;<i class="fa-solid fa-arrow-right"></i>'
   );
   $("#setup-pane").css("display", "block");
+  $("#report-container").css("display", "none");
   $("#add-step").css("visibility", "visible");
   $("#back").css("visibility", "hidden");
   $("#results-container").css("display", "none");
@@ -259,6 +261,7 @@ function displayResults(data, stackRows) {
       'Create Report &ensp; <i class="fa-solid fa-arrow-right"></i>'
   );
   $("#setup-pane").css("display", "none");
+  $("#report-container").css("display", "none");
   $("#add-step").css("visibility", "hidden");
   $("#back").css("visibility", "visible");
   $("#results-container").css("display", "block");
@@ -271,7 +274,6 @@ function displayResults(data, stackRows) {
  * Displays the report creation page
  */
 function displayReport(stackRows) {
-  console.log("REPORT");
   pageState.page = State.pages.Report;
 
   $("#advance").css("visibility", "hidden");
@@ -279,9 +281,12 @@ function displayReport(stackRows) {
   $("#add-step").css("visibility", "hidden");
   $("#back").css("visibility", "visible");
   $("#results-container").css("display", "none");
+  $("#report-container").css("display", "block");
 
-  // TODO: ADD report title, revision, name
-  createPDF(stackRows);
+  $("#report").click(function () {
+    // TODO: ADD report title, revision, name
+    createPDF(stackRows);
+  });
 }
 
 /**
@@ -289,10 +294,51 @@ function displayReport(stackRows) {
  * @param {Object} stackRows Object holding StackRow objects at numeric indices
  */
 function createPDF(stackRows) {
-  const doc = new jsPDF();
   // A4 page size: 210 X 297 mm
   // Default left margin: 14mm
-  doc.text("Stackup Steps", 14, 20);
+  const doc = new jsPDF();
+  let lineY = 0;
+
+  if ($("#report-name").val() != "") {
+    doc.setFontSize(20);
+    doc.text(
+      "Tolerance Stackup Report: " + String($("#report-name").val()),
+      14,
+      20
+    );
+    lineY += 10;
+    doc.setFontSize(14);
+    console.log("ADDED");
+  }
+
+  if ($(author).val() != "") {
+    doc.setFontSize(10);
+    doc.text("Author: " + String($("#author").val()), 14, 10);
+    doc.setFontSize(14);
+  }
+  if ($(revision).val() != "") {
+    doc.setFontSize(10);
+    doc.text("Revision: " + String($("#revision").val()), 182, 10, {
+      align: "right",
+    });
+
+    const date = new Date().toJSON().slice(0, 10).replace(/-/g, "/");
+    doc.text(String(date), 105, 10, {
+      align: "center",
+    });
+    doc.setFontSize(14);
+  }
+  if ($("#description").val() != "") {
+    doc.text("Description", 14, 20 + lineY);
+    doc.setFontSize(12);
+    const text = doc.splitTextToSize(String($("#description").val()), 180);
+    doc.text(14, 25 + lineY, text);
+    lineY += 7 + 4.8 * text.length;
+    doc.setFontSize(14);
+  }
+
+  doc.text("Stackup Steps:", 14, 20 + lineY);
+  lineY += 25;
 
   let columns = [
     { title: "#", dataKey: "ID" },
@@ -325,9 +371,9 @@ function createPDF(stackRows) {
   }
 
   let columnStyles = {};
-  addTable(doc, columns, rows, columnStyles);
+  addTable(doc, columns, rows, columnStyles, lineY);
 
-  let lineY = doc.previousAutoTable.finalY;
+  lineY = doc.previousAutoTable.finalY;
 
   // Add SVG to pdf
   const svg = document.getElementsByClassName("svg")[0];

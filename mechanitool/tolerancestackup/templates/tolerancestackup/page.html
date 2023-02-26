@@ -199,7 +199,8 @@
               .rule-rect-outside {
                 fill: rgba(150, 0, 0, 0.1);
               }
-              .rule-text {
+              .rule-text,
+              .rule-text-within {
                 fill: #112d4e;
                 font-family: "Helvetica Neue", "Helvetica", "sans-serif";
                 font-size: 16px;
@@ -295,6 +296,51 @@
           </table>
         </div>
       </div>
+    </div>
+    <div
+      id="report-container"
+      style="display: none; width: 83.333%; margin: auto"
+    >
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="report-name-label"
+            >Report Name</span
+          >
+        </div>
+        <input class="form-control" type="text" id="report-name" />
+      </div>
+
+      <div class="row" style="margin: 1rem">
+        <div class="col-md-3 offset-3">
+          <p class="input-label">Author:</p>
+          <input
+            class="form-control"
+            type="text"
+            id="author"
+            style="display: inline; width: 75%"
+          />
+        </div>
+
+        <div class="col-md-3">
+          <p class="input-label">Revision:</p>
+          <input
+            class="form-control"
+            id="revision"
+            style="display: inline; width: 75%"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="exampleFormControlTextarea1" style="margin-bottom: 0.5rem"
+          >Report Description:</label
+        >
+        <textarea class="form-control" id="description" rows="5"></textarea>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top: 150px" id="report">
+        Generate Report
+      </button>
     </div>
     <div class="row stack-step fixed-bottom button-row" id="button-row">
       <div class="offset-1 col-md-2">

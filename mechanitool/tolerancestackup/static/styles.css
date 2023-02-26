@@ -184,3 +184,11 @@ html {
   text-align: center;
   margin: auto;
 }
+
+.input-label {
+  color: #112d4e;
+  display: inline-block;
+  text-align: right;
+  margin: auto;
+  padding: 1rem;
+}
