@@ -3,7 +3,7 @@ from scipy.stats import truncnorm
 from abc import ABC, abstractmethod
 
 # The default number of samples if no other value is specified
-DEFAULT_SAMPLES = 10000
+DEFAULT_SAMPLES = 100000
 
 
 class Distribution(ABC):

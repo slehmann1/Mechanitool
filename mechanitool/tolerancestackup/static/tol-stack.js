@@ -12,7 +12,7 @@ function State() {
   this.page = 0;
 }
 
-const HIST_BINS = 15;
+const HIST_BINS = 50;
 const pageState = new State();
 
 $(document).ready(function () {
@@ -29,24 +29,28 @@ $(document).ready(function () {
 
   $("#advance").click(function () {
     if (pageState.page == State.pages.Setup) {
-      stackRows = new StackRows();
-      console.log("Wrote: ");
-      console.log(stackRows);
-      $.ajax({
-        url: "http://127.0.0.1:8000/tol/api",
-        headers: {
-          "X-CSRFToken": $.cookie("csrftoken"),
-        },
-        type: "POST",
-        data: JSON.stringify(stackRows),
-        contentType: "application/json; charset=utf-8",
-        processData: false,
-        success: function (data) {
-          console.log("Recieved: ");
-          archivedData = data;
-          displayResults(data, stackRows);
-        },
-      });
+      try {
+        stackRows = new StackRows();
+        console.log("Wrote: ");
+        console.log(stackRows);
+        $.ajax({
+          url: "http://127.0.0.1:8000/tol/api",
+          headers: {
+            "X-CSRFToken": $.cookie("csrftoken"),
+          },
+          type: "POST",
+          data: JSON.stringify(stackRows),
+          contentType: "application/json; charset=utf-8",
+          processData: false,
+          success: function (data) {
+            console.log("Data Recieved");
+            archivedData = data;
+            displayResults(data, stackRows);
+          },
+        });
+      } catch {
+        alert("Please verify all fields are filled correctly");
+      }
     } else if (pageState.page == State.pages.Results) {
       displayReport(stackRows);
     }
@@ -61,9 +65,7 @@ $(document).ready(function () {
   });
 
   // Input Events
-  $("#tolerance").on("input", function () {
-    toleranceInputChange(this);
-  });
+  addRowInputEvents($("#row-0"));
 });
 
 /**
@@ -98,13 +100,40 @@ function addRow(rowNum) {
     .clone()
     .appendTo("#stack-container");
   updateRow(row, rowNum, true);
-  // Delete button listener
+  addRowInputEvents(row);
+}
+
+/**
+ * Adds events to UI elements within a stackrow
+ * @param {JQueryObject} row A stack row
+ */
+function addRowInputEvents(row) {
   row.find("#delete").click(function () {
     deleteRow(row);
   });
   row.find("#tolerance").on("input", function () {
     toleranceInputChange(this);
   });
+  row.find("#dist").on("change", function () {
+    distributionChange(this);
+  });
+}
+
+/**
+ * Updates interface when the distribution type for a stackrow changes
+ * @param {SelectElement} obj Select element for distribution type
+ */
+function distributionChange(obj) {
+  row = $(obj).parent().parent().parent();
+  if (obj.value == "Normal") {
+    row.find("#std-container").css("visibility", "visible");
+    row.find("#cutoff-container").css("visibility", "visible");
+    row.find("#cutoffs-switches").css("visibility", "visible");
+  } else {
+    row.find("#std-container").css("visibility", "hidden");
+    row.find("#cutoff-container").css("visibility", "hidden");
+    row.find("#cutoffs-switches").css("visibility", "hidden");
+  }
 }
 
 /**
@@ -113,7 +142,6 @@ function addRow(rowNum) {
  */
 function toleranceInputChange(obj) {
   if (!isNaN($(obj).val()) && $(obj).val() != "") {
-    console.log($(obj).val());
     $(obj)
       .parent()
       .parent()
@@ -151,6 +179,9 @@ function updateRow(row, rowNum, resetRow = false) {
     cutoffs.prop("checked", false);
     row.find("#cutoff-well").css("visibility", "hidden");
     row.find("#delete").css("visibility", "visible");
+    row.find("#std-container").css("visibility", "visible");
+    row.find("#cutoff-container").css("visibility", "visible");
+    row.find("#cutoffs-switches").css("visibility", "visible");
   }
 
   // Change cutoff visibility on toggle
@@ -211,13 +242,12 @@ function updateID(jqObj, rowNum) {
 
 /**
  * Creates a stackrows object given the data within the UI
- * @return {StackRow} Representation of UI data
+ * @return {StackRow} Representation of UI data, or false if UI is not filled correctly
  */
 function StackRows() {
   const stackRows = {};
   for (let i = 0; i <= pageState.currentRowNum; i++) {
     const row = $("#row-" + i);
-    console.log("ROW" + row);
     stackRows[i] = {
       number: i + 1,
       name: row.find("#stack-name").val(),
@@ -228,6 +258,14 @@ function StackRows() {
       lsl: parseFloat(row.find("#lower-cutoff").val()),
       usl: parseFloat(row.find("#upper-cutoff").val()),
     };
+
+    // Check Stack row
+    if (isNaN(stackRows[i].nominal)) {
+      throw Error("Incorrect Value");
+    }
+    if (isNaN(stackRows[i].tolerance)) {
+      throw Error("Incorrect Value");
+    }
   }
   return stackRows;
 }
@@ -308,7 +346,6 @@ function createPDF(stackRows) {
     );
     lineY += 10;
     doc.setFontSize(14);
-    console.log("ADDED");
   }
 
   if ($(author).val() != "") {
@@ -352,7 +389,6 @@ function createPDF(stackRows) {
   ];
 
   let rows = [];
-  console.log(stackRows);
 
   for (let i = 0; i < Object.keys(stackRows).length; i++) {
     // Add a row for the stackrow
@@ -366,8 +402,6 @@ function createPDF(stackRows) {
       LSL: stackRows[i].lsl,
       USL: stackRows[i].usl,
     });
-    console.log("ROW " + i);
-    console.log(rows);
   }
 
   let columnStyles = {};
@@ -570,8 +604,13 @@ function createHistogram(data) {
   const height = parent.height() - margin;
 
   const domain = [Math.min(...data), Math.max(...data)];
+  // Plot slightly beyond the domain
+  const delta = domain[1] - domain[0];
+  domain[1] = domain[1] + delta * 0.1;
+  domain[0] = domain[0] - delta * 0.1;
+
   const [maxY, histData] = getHistogramBins(data, domain);
-  const range = [0, maxY];
+  const range = [0, maxY * 1.1];
 
   const xScale = d3.scaleLinear().domain(domain).range([0, width]);
   const yScale = d3.scaleLinear().domain(range).range([height, 0]);
@@ -1088,6 +1127,8 @@ function getPercentile(data, value) {
       return (i / data.length) * 100;
     }
   }
+  // All data below the value
+  return 100;
 }
 
 /**
@@ -1098,7 +1139,6 @@ function getPercentile(data, value) {
  * @return {Number}
  */
 function getCPK(data, usl, lsl) {
-  console.log("LSL: " + lsl + "USL" + usl);
   const mean = calcMean(data);
   const std = calcSTD(data, mean);
   const CPU = (usl - mean) / 3 / std;

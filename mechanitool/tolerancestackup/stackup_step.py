@@ -19,8 +19,8 @@ class StackupStep:
                 float(stackup_dict["nominal"]), float(stackup_dict["std"]), lower_lim=lsl, upper_lim=usl)
 
         elif stackup_dict["distribution"] == "Uniform":
-            # TODO: ADD
-            raise NotImplementedError("Don't yet support uniform")
+            self.distribution = Uniform(
+                float(stackup_dict["nominal"]), float(stackup_dict["tolerance"]))
         else:
             raise ValueError(
                 "Distribution in stackup dictionary is not recognized")
