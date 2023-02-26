@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tolerancestackup.apps.TolerancestackupConfig',
     'rest_framework',
+    'django_extensions'
 ]
 
 MIDDLEWARE = [

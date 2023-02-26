@@ -1,11 +1,12 @@
 import numpy as np
 import tolerancestackup.distributions as distributions
 from tolerancestackup.stackup_step import StackupStep
+import tolerancestackup.models as md
 
 
 class Stackup:
 
-    def __init__(self, stackup_dict: dict = None, revision: str = "01", num_samples: int = distributions.DEFAULT_SAMPLES):
+    def __init__(self, stackup_dict: dict = None, revision: str = None, name: str = None, author: str = None, description: str = None, num_samples: int = distributions.DEFAULT_SAMPLES):
         """Creates a stackup, consisting of a series of stackup steps
 
         Args:
@@ -15,6 +16,9 @@ class Stackup:
         """
         self.stackup_steps = []
         self.revision = revision
+        self.name = name
+        self.author = author
+        self.description = description
         self.num_samples = num_samples
 
         # TODO: Data validation
@@ -50,7 +54,28 @@ class Stackup:
         self.values = np.zeros(self.num_samples)
         for i in range(num_of_steps):
             self.values += self.stackup_steps[i].calculate()
-        
+
         self.values.sort()
 
         return self.values
+
+    def gen_models(self):
+
+        stackup = md.Stackup()
+
+        if self.name:
+            stackup.name = self.name[:49]
+        if self.author:
+            stackup.author = self.author[:29]
+        if self.description:
+            stackup.description = self.description[:199]
+        if self.revision:
+            stackup.revision = self.revision[:9]
+
+        stackup_steps = [stackup_step.to_model(stackup)
+                         for stackup_step in self.stackup_steps]
+
+        stackup.save()
+        md.StackupStep.objects.bulk_create(stackup_steps)
+
+        return stackup.id

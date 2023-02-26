@@ -38,7 +38,7 @@ $(document).ready(function () {
           headers: {
             "X-CSRFToken": $.cookie("csrftoken"),
           },
-          type: "POST",
+          type: "PUT",
           data: JSON.stringify(stackRows),
           contentType: "application/json; charset=utf-8",
           processData: false,
@@ -62,6 +62,23 @@ $(document).ready(function () {
     } else if (pageState.page == State.pages.Report) {
       displayResults(archivedData, stackRows);
     }
+  });
+
+  $("#share-results").click(function () {
+    $.ajax({
+      url: "http://127.0.0.1:8000/tol/add",
+      headers: {
+        "X-CSRFToken": $.cookie("csrftoken"),
+      },
+      type: "POST",
+      data: JSON.stringify(new TolerancePackage(stackRows)),
+      contentType: "application/json; charset=utf-8",
+      processData: false,
+      success: function (data) {
+        console.log("Data Recieved" + data);
+      },
+    });
+    console.log("SHARED");
   });
 
   // Input Events
@@ -242,7 +259,7 @@ function updateID(jqObj, rowNum) {
 
 /**
  * Creates a stackrows object given the data within the UI
- * @return {StackRow} Representation of UI data, or false if UI is not filled correctly
+ * @return {StackRow} Representation of UI data false if UI filled incorrectly
  */
 function StackRows() {
   const stackRows = {};
@@ -271,6 +288,21 @@ function StackRows() {
 }
 
 /**
+ * Creates an overview of all user inputted information
+ * @param {StackRows} stackrows Stackrows plotted during the tolerance stackup
+ * @return {TolerancePackage} Representation of complete tolerance stackup info
+ */
+function TolerancePackage(stackrows) {
+  const pack = {};
+  pack["stackrows"] = stackrows;
+  pack["name"] = $("#report-name").val();
+  pack["author"] = $("#author").val();
+  pack["revision"] = $("#revision").val();
+  pack["description"] = $("#description").val();
+  return pack;
+}
+
+/**
  * Displays the setup pane for a tolerance stack
  */
 function displaySetup() {
@@ -281,7 +313,8 @@ function displaySetup() {
   );
   $("#setup-pane").css("display", "block");
   $("#report-container").css("display", "none");
-  $("#add-step").css("visibility", "visible");
+  $("#add-step").parent().css("display", "inline-block");
+  $("#share-container").css("display", "none");
   $("#back").css("visibility", "hidden");
   $("#results-container").css("display", "none");
   $("#advance").css("visibility", "visible");
@@ -300,10 +333,11 @@ function displayResults(data, stackRows) {
   );
   $("#setup-pane").css("display", "none");
   $("#report-container").css("display", "none");
-  $("#add-step").css("visibility", "hidden");
+  $("#add-step").parent().css("display", "none");
   $("#back").css("visibility", "visible");
   $("#results-container").css("display", "block");
   $("#advance").css("visibility", "visible");
+  $("#share-container").css("display", "inline-block");
   createHistogram(data["values"]);
   updateStatisticalTables(data["values"], stackRows);
 }
@@ -316,13 +350,13 @@ function displayReport(stackRows) {
 
   $("#advance").css("visibility", "hidden");
   $("#setup-pane").css("display", "none");
-  $("#add-step").css("visibility", "hidden");
+  $("#add-step").parent().css("display", "none");
   $("#back").css("visibility", "visible");
   $("#results-container").css("display", "none");
   $("#report-container").css("display", "block");
+  $("#share-container").css("display", "inline-block");
 
   $("#report").click(function () {
-    // TODO: ADD report title, revision, name
     createPDF(stackRows);
   });
 }

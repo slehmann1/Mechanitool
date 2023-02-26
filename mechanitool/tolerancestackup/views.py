@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.views import View
 import json
 from tolerancestackup.stackup import Stackup
+from tolerancestackup import models as md
 
 
 def view(request):
@@ -14,10 +15,25 @@ class TolStack(View):
         return render(request, "tolerancestackup/page.html")
 
 
-def js_response(request):
+def calc_stack(request):
+    print(request)
     data = json.loads(request.body)
     # Convert to list to make jsonable
-    return_data = Stackup(data).calc_stack().tolist()
-
+    try:
+        return_data = Stackup(data).calc_stack().tolist()
+    except (ValueError):
+        return JsonResponse(status=400)
     print("Data Sent")
     return JsonResponse({"values": return_data}, status=200)
+
+
+def save_stack(request):
+
+    data = json.loads(request.body)
+    stack_id = Stackup(data["stackrows"]).gen_models()
+    return JsonResponse({"id": stack_id}, status=200)
+
+
+def load_stack(request, id):
+    stackup = md.Stackup.objects.get(id=id)
+    return JsonResponse({"stack": stackup.serialize()})
