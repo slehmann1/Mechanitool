@@ -24,7 +24,7 @@ class Stackup(models.Model):
 
         steps = {i: step.serialize() for i, step in enumerate(
             list(StackupStep.objects.filter(stackup=self)))}
-
+        print(f"NAME: {self.name}")
         return {"name": self.name, "author": self.author, "revision": self.revision, "description": self.description, "steps": steps}
 
 

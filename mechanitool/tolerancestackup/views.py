@@ -30,10 +30,10 @@ def calc_stack(request):
 def save_stack(request):
 
     data = json.loads(request.body)
-    stack_id = Stackup(data["stackrows"]).gen_models()
+    stack_id = Stackup(data).gen_models()
     return JsonResponse({"id": stack_id}, status=200)
 
 
 def load_stack(request, id):
     stackup = md.Stackup.objects.get(id=id)
-    return JsonResponse({"stack": stackup.serialize()})
+    return JsonResponse(stackup.serialize())

@@ -6,7 +6,7 @@ import tolerancestackup.models as md
 
 class Stackup:
 
-    def __init__(self, stackup_dict: dict = None, revision: str = None, name: str = None, author: str = None, description: str = None, num_samples: int = distributions.DEFAULT_SAMPLES):
+    def __init__(self, stackup_dict: dict = None, num_samples: int = distributions.DEFAULT_SAMPLES):
         """Creates a stackup, consisting of a series of stackup steps
 
         Args:
@@ -15,14 +15,23 @@ class Stackup:
             num_samples (int, optional): Number of samples to be generated. Defaults to distributions.DEFAULT_SAMPLES.
         """
         self.stackup_steps = []
-        self.revision = revision
-        self.name = name
-        self.author = author
-        self.description = description
         self.num_samples = num_samples
+        self.name = self.author = self.description = self.revision = None
+
+        if "name" in stackup_dict:
+            self.name = stackup_dict["name"]
+
+        if "author" in stackup_dict:
+            self.author = stackup_dict["author"]
+
+        if "description" in stackup_dict:
+            self.description = stackup_dict["description"]
+
+        if "revision" in stackup_dict:
+            self.revision = stackup_dict["revision"]
 
         # TODO: Data validation
-        for value in stackup_dict.values():
+        for value in stackup_dict["stackrows"].values():
             self.add_step(StackupStep(value))
 
     def add_step(self, stackup_step: StackupStep):
@@ -62,6 +71,8 @@ class Stackup:
     def gen_models(self):
 
         stackup = md.Stackup()
+
+        print
 
         if self.name:
             stackup.name = self.name[:49]

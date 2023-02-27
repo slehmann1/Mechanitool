@@ -34,12 +34,12 @@ $(document).ready(function () {
         console.log("Wrote: ");
         console.log(stackRows);
         $.ajax({
-          url: "http://127.0.0.1:8000/tol/api",
+          url: "http://127.0.0.1:8000/tol/calc",
           headers: {
             "X-CSRFToken": $.cookie("csrftoken"),
           },
           type: "PUT",
-          data: JSON.stringify(stackRows),
+          data: JSON.stringify({ stackrows: stackRows }),
           contentType: "application/json; charset=utf-8",
           processData: false,
           success: function (data) {
@@ -78,11 +78,30 @@ $(document).ready(function () {
         console.log("Data Recieved" + data);
       },
     });
-    console.log("SHARED");
   });
 
   // Input Events
   addRowInputEvents($("#row-0"));
+
+  const path = window.location.pathname.split("ID=");
+  if (path.length > 1) {
+    console.log("URL: " + window.location.pathname);
+    console.log("ID: " + path[1]);
+
+    // Poll server for values
+    $.ajax({
+      url: "http://127.0.0.1:8000/tol/stacks/" + path[1],
+      headers: {
+        "X-CSRFToken": $.cookie("csrftoken"),
+      },
+      type: "GET",
+      contentType: "application/json; charset=utf-8",
+      processData: false,
+      success: function (data) {
+        loadFromData(data);
+      },
+    });
+  }
 });
 
 /**
@@ -144,11 +163,11 @@ function distributionChange(obj) {
   row = $(obj).parent().parent().parent();
   if (obj.value == "Normal") {
     row.find("#std-container").css("visibility", "visible");
-    row.find("#cutoff-container").css("visibility", "visible");
+    row.find("#cutoff-well").css("visibility", "visible");
     row.find("#cutoffs-switches").css("visibility", "visible");
   } else {
     row.find("#std-container").css("visibility", "hidden");
-    row.find("#cutoff-container").css("visibility", "hidden");
+    row.find("#cutoff-well").css("visibility", "hidden");
     row.find("#cutoffs-switches").css("visibility", "hidden");
   }
 }
@@ -300,6 +319,52 @@ function TolerancePackage(stackrows) {
   pack["revision"] = $("#revision").val();
   pack["description"] = $("#description").val();
   return pack;
+}
+
+/**
+ * Loads the entire UI from data returned by the server
+ * @param {Object} data An object containing all data for a tolerance stackup run
+ */
+function loadFromData(data) {
+  $("#author").val(data.author);
+  $("#description").val(data.description);
+  $("#revision").val(data.revision);
+  $("#report-name").val(data.name);
+  console.log(data);
+  console.log(data.steps);
+
+  for (let i = 0; i < Object.keys(data.steps).length; i++) {
+    createRowFromObj(i, data.steps[i]);
+  }
+}
+
+/**
+ * Creates a row from an object returned by the server
+ * @param {Number} rowNum The current row number
+ * @param {Object} obj A stack row object returned by the server
+ */
+function createRowFromObj(rowNum, obj) {
+  if (rowNum > pageState.currentRowNum) {
+    addRow(rowNum);
+  }
+  const row = $("#row-" + rowNum);
+  row.find("#stack-name").val(obj.name);
+  row.find("#nominal").val(obj.nominal);
+  row.find("#tolerance").val(obj.tolerance);
+  row.find("#dist").val(obj.distribution);
+  row.find("#std").val(obj.std);
+  row.find("#lsl").val(obj.lsl);
+  row.find("#usl").val(obj.usl);
+
+  if (obj.distribution == "Uniform") {
+    row.find("#std-container").css("visibility", "hidden");
+    row.find("#cutoff-container").css("visibility", "hidden");
+    row.find("#cutoffs-switches").css("visibility", "hidden");
+  } else {
+    if (obj.lsl || obj.usl) {
+      row.find("#cutoff-well").css("visibility", "visible");
+    }
+  }
 }
 
 /**
