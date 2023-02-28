@@ -31,8 +31,6 @@ $(document).ready(function () {
     if (pageState.page == State.pages.Setup) {
       try {
         stackRows = new StackRows();
-        console.log("Wrote: ");
-        console.log(stackRows);
         $.ajax({
           url: "http://127.0.0.1:8000/tol/calc",
           headers: {
@@ -43,13 +41,12 @@ $(document).ready(function () {
           contentType: "application/json; charset=utf-8",
           processData: false,
           success: function (data) {
-            console.log("Data Recieved");
             archivedData = data;
             displayResults(data, stackRows);
           },
         });
       } catch {
-        alert("Please verify all fields are filled correctly");
+        addPopup("Please verify all fields are filled correctly");
       }
     } else if (pageState.page == State.pages.Results) {
       displayReport(stackRows);
@@ -75,7 +72,12 @@ $(document).ready(function () {
       contentType: "application/json; charset=utf-8",
       processData: false,
       success: function (data) {
-        console.log("Data Recieved" + data);
+        addPopup(
+          "Permanent Link:\n" +
+            window.location.hostname +
+            "/tol/ID=" +
+            data.id
+        );
       },
     });
   });
@@ -85,9 +87,6 @@ $(document).ready(function () {
 
   const path = window.location.pathname.split("ID=");
   if (path.length > 1) {
-    console.log("URL: " + window.location.pathname);
-    console.log("ID: " + path[1]);
-
     // Poll server for values
     $.ajax({
       url: "http://127.0.0.1:8000/tol/stacks/" + path[1],
@@ -330,8 +329,6 @@ function loadFromData(data) {
   $("#description").val(data.description);
   $("#revision").val(data.revision);
   $("#report-name").val(data.name);
-  console.log(data);
-  console.log(data.steps);
 
   for (let i = 0; i < Object.keys(data.steps).length; i++) {
     createRowFromObj(i, data.steps[i]);
@@ -1264,4 +1261,16 @@ function calcSTD(data, mean) {
   return Math.sqrt(
     data.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / data.length
   );
+}
+
+/**
+ * Creates an onscreen popup
+ * @param {String} text Text to display in the popup window
+ */
+function addPopup(text) {
+  $("#popup").css("visibility", "visible");
+  $("#popup-text").html(text.replace("\n", "<br>"));
+  $("#close-popup").click(function () {
+    $("#popup").css("visibility", "hidden");
+  });
 }

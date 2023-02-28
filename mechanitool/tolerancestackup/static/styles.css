@@ -192,3 +192,50 @@ html {
   margin: auto;
   padding: 1rem;
 }
+
+.btn.popup-close {
+  background-color: #112d4e !important;
+  border: 2px solid #dbe2ef !important;
+  color: #f9f7f7 !important;
+  border-radius: 35px;
+  width: 40px;
+  height: 40px;
+  margin: 2px;
+  position: relative;
+  float: right;
+  text-align: center;
+  font-weight: 700;
+  font-size: large;
+}
+
+.popup-text {
+  text-align: center;
+}
+
+.popup {
+  border: 3px solid #112d4e;
+  border-radius: 10px;
+  width: 400px;
+  height: 100px;
+  margin-bottom: 500px;
+  position: absolute;
+  left: 42.5%;
+  top: 30%;
+  background-color: #dbe2ef;
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.popup-text-container {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  margin-left: 40px;
+  margin-top: 8px;
+}
