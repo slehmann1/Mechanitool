@@ -73,10 +73,7 @@ $(document).ready(function () {
       processData: false,
       success: function (data) {
         addPopup(
-          "Permanent Link:\n" +
-            window.location.hostname +
-            "/tol/ID=" +
-            data.id
+          "Permanent Link:\n" + window.location.hostname + "/tol?ID=" + data.id
         );
       },
     });
@@ -84,8 +81,7 @@ $(document).ready(function () {
 
   // Input Events
   addRowInputEvents($("#row-0"));
-
-  const path = window.location.pathname.split("ID=");
+  const path = window.location.search.split("ID=");
   if (path.length > 1) {
     // Poll server for values
     $.ajax({

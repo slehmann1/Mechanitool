@@ -34,6 +34,6 @@ def save_stack(request):
     return JsonResponse({"id": stack_id}, status=200)
 
 
-def load_stack(request, id):
+def load_stack(_, id):
     stackup = md.Stackup.objects.get(id=id)
     return JsonResponse(stackup.serialize())

@@ -17,5 +17,5 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('tol/', include("tolerancestackup.urls"), name="tolstack"),
+    path('tol', include("tolerancestackup.urls"), name="tolstack"),
 ]
