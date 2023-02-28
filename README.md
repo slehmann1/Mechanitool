@@ -3,9 +3,9 @@ Full-stack statistical tolerance stackup web application based on the Monte Carl
 
 ### Feature Demonstration
 
-![1D Chain Video](https://raw.githubusercontent.com/slehmann1/Mechanitool/master/resources/SampleVideo.gifg)
+![1D Chain Video](https://raw.githubusercontent.com/slehmann1/Mechanitool/master/resources/SampleVideo.gif)
 
-The software can also generate professional looking reports like [this (1D Stack)](https://github.com/slehmann1/Mechanitool/blob/master/resources/ToleranceStackupReport.pdf).
+The software can also generate professional looking reports like [this (1D Stack)](https://github.com/slehmann1/Mechanitool/raw/master/resources/ToleranceStackupReport.pdf).
 
 #### Dependencies and structure
 Backend written in Python using Django, pandas, numpy, and scipy. A database is used to save tolerance stackups; this data is then served using a RESTful API.
