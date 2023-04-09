@@ -3,7 +3,7 @@ Full-stack statistical tolerance stackup web application based on the Monte Carl
 
 ### Feature Demonstration
 
-![1D Chain Video](https://raw.githubusercontent.com/slehmann1/Mechanitool/master/resources/SampleVideo.gif)
+![1D Chain Video](https://raw.githubusercontent.com/slehmann1/Mechanitool/master/resources/SampleVideo2.gif)
 
 The software can also generate professional looking reports like [this (1D Stack)](https://github.com/slehmann1/Mechanitool/raw/master/resources/ToleranceStackupReport.pdf).
 

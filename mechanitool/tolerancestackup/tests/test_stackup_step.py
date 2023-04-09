@@ -1,7 +1,7 @@
+import numpy as np
 from django.test import TestCase
 from tolerancestackup.distributions import Normal, Uniform
 from tolerancestackup.stackup_step import StackupStep
-import numpy as np
 
 
 class StackupStepTest(TestCase):
@@ -16,12 +16,17 @@ class StackupStepTest(TestCase):
             "usl": "",
         }
 
-        distribution = Normal(
-            normal_dict["mean"], normal_dict["std"]).calculate()
-        self.assertAlmostEqual(np.mean(distribution), np.mean(
-            StackupStep(normal_dict).calculate()), delta=0.5)
-        self.assertAlmostEqual(np.std(distribution), np.std(
-            StackupStep(normal_dict).calculate()), delta=0.5)
+        distribution = Normal(normal_dict["mean"], normal_dict["std"]).calculate()
+        self.assertAlmostEqual(
+            np.mean(distribution),
+            np.mean(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
+        self.assertAlmostEqual(
+            np.std(distribution),
+            np.std(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
 
     def test_bounded_normal(self):
         normal_dict = {
@@ -34,19 +39,31 @@ class StackupStepTest(TestCase):
             "usl": 3,
         }
 
-        distribution = Normal(normal_dict["mean"], normal_dict["std"],
-                              lower_lim=normal_dict["lsl"], upper_lim=normal_dict["usl"]).calculate()
+        distribution = Normal(
+            normal_dict["mean"],
+            normal_dict["std"],
+            lower_lim=normal_dict["lsl"],
+            upper_lim=normal_dict["usl"],
+        ).calculate()
 
-        self.assertAlmostEqual(np.mean(distribution), np.mean(
-            StackupStep(normal_dict).calculate()), delta=0.5)
-        self.assertAlmostEqual(np.std(distribution), np.std(
-            StackupStep(normal_dict).calculate()), delta=0.5)
+        self.assertAlmostEqual(
+            np.mean(distribution),
+            np.mean(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
+        self.assertAlmostEqual(
+            np.std(distribution),
+            np.std(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
 
         self.assertGreaterEqual(
-            np.min(StackupStep(normal_dict).calculate()), normal_dict["lsl"])
+            np.min(StackupStep(normal_dict).calculate()), normal_dict["lsl"]
+        )
 
         self.assertLessEqual(
-            np.max(StackupStep(normal_dict).calculate()), normal_dict["usl"])
+            np.max(StackupStep(normal_dict).calculate()), normal_dict["usl"]
+        )
 
     def test_left_bounded_normal(self):
         normal_dict = {
@@ -59,16 +76,24 @@ class StackupStepTest(TestCase):
             "usl": "",
         }
 
-        distribution = Normal(normal_dict["mean"], normal_dict["std"],
-                              lower_lim=normal_dict["lsl"]).calculate()
+        distribution = Normal(
+            normal_dict["mean"], normal_dict["std"], lower_lim=normal_dict["lsl"]
+        ).calculate()
 
-        self.assertAlmostEqual(np.mean(distribution), np.mean(
-            StackupStep(normal_dict).calculate()), delta=0.5)
-        self.assertAlmostEqual(np.std(distribution), np.std(
-            StackupStep(normal_dict).calculate()), delta=0.5)
+        self.assertAlmostEqual(
+            np.mean(distribution),
+            np.mean(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
+        self.assertAlmostEqual(
+            np.std(distribution),
+            np.std(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
 
         self.assertGreaterEqual(
-            np.min(StackupStep(normal_dict).calculate()), normal_dict["lsl"])
+            np.min(StackupStep(normal_dict).calculate()), normal_dict["lsl"]
+        )
 
     def test_right_bounded_normal(self):
         normal_dict = {
@@ -81,16 +106,24 @@ class StackupStepTest(TestCase):
             "usl": 3,
         }
 
-        distribution = Normal(normal_dict["mean"], normal_dict["std"],
-                              upper_lim=normal_dict["usl"]).calculate()
+        distribution = Normal(
+            normal_dict["mean"], normal_dict["std"], upper_lim=normal_dict["usl"]
+        ).calculate()
 
-        self.assertAlmostEqual(np.mean(distribution), np.mean(
-            StackupStep(normal_dict).calculate()), delta=0.5)
-        self.assertAlmostEqual(np.std(distribution), np.std(
-            StackupStep(normal_dict).calculate()), delta=0.5)
+        self.assertAlmostEqual(
+            np.mean(distribution),
+            np.mean(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
+        self.assertAlmostEqual(
+            np.std(distribution),
+            np.std(StackupStep(normal_dict).calculate()),
+            delta=0.5,
+        )
 
         self.assertLessEqual(
-            np.max(StackupStep(normal_dict).calculate()), normal_dict["usl"])
+            np.max(StackupStep(normal_dict).calculate()), normal_dict["usl"]
+        )
 
     def test_error_distribution(self):
         dist_dict = {
